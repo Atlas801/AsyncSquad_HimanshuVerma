@@ -1,44 +1,282 @@
 @import "tailwindcss";
 
 @theme {
-  --color-forest-50: #f0fdf4;
-  --color-forest-100: #dcfce7;
-  --color-forest-500: #22c55e;
-  --color-forest-600: #16a34a;
-  --color-forest-700: #15803d;
-  --color-forest-900: #14532d;
-  --color-earth-500: #ca8a04;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-serif: 'Lora', Georgia, serif;
+
+  --color-cream: #FAF6F0;
+  --color-card: #FFFFFF;
+  --color-border: #E5DDD5;
+
+  --color-forest-900: #1A3A0A;
+  --color-forest-700: #2A5F1E;
+  --color-forest-600: #3A7A2A;
+  --color-forest-100: #E8F5E3;
+  --color-forest-50: #F2FAF0;
+
+  --color-terra-700: #9A4A2C;
+  --color-terra-600: #B85C38;
+  --color-terra-100: #FBE9E2;
+  --color-terra-50: #FDF4F1;
+
+  --color-bark-900: #1C1208;
+  --color-bark-700: #3D2B1F;
+  --color-bark-500: #6B5747;
+  --color-bark-300: #9E8B7D;
+  --color-bark-100: #E5DDD5;
 }
 
 @layer base {
-  :root {
-    --background: #f8fafc;
-    --foreground: #0f172a;
-  }
-  
   body {
-    background-color: var(--background);
-    color: var(--foreground);
-    @apply font-sans antialiased;
+    background-color: #FAF6F0;
+    color: #1C1208;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3 {
+    font-family: 'Lora', Georgia, serif;
+    letter-spacing: -0.02em;
   }
 }
 
 @layer utilities {
-  .glass {
-    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-xl;
+  .font-serif { font-family: 'Lora', Georgia, serif; }
+
+  /* Warm card — no glassmorphism, just clean + warm */
+  .card {
+    background-color: #FFFFFF;
+    border: 1px solid #E5DDD5;
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(60, 40, 20, 0.06);
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
   }
-  .card-hover {
-    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl;
+  .card:hover {
+    box-shadow: 0 8px 30px rgba(60, 40, 20, 0.12);
+    transform: translateY(-2px);
   }
-  .animated-gradient {
-    background: linear-gradient(270deg, #10b981, #3b82f6, #10b981);
-    background-size: 200% 200%;
-    animation: gradientFlow 5s ease infinite;
+
+  /* Eco tag badge */
+  .eco-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border-radius: 100px;
+    background-color: #E8F5E3;
+    color: #2A5F1E;
+    border: 1px solid #c5e1bd;
   }
+  .eco-tag-terra {
+    background-color: #FBE9E2;
+    color: #9A4A2C;
+    border-color: #f0c4b0;
+  }
+
+  /* Buttons */
+  .btn-primary {
+    background-color: #2A5F1E;
+    color: #ffffff;
+    font-weight: 600;
+    padding: 12px 28px;
+    border-radius: 10px;
+    transition: background-color 0.2s, transform 0.15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-primary:hover { background-color: #1A3A0A; }
+  .btn-primary:active { transform: scale(0.97); }
+
+  .btn-secondary {
+    background-color: #FFFFFF;
+    color: #2A5F1E;
+    font-weight: 600;
+    padding: 12px 28px;
+    border-radius: 10px;
+    border: 1.5px solid #2A5F1E;
+    transition: background-color 0.2s, transform 0.15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-secondary:hover { background-color: #E8F5E3; }
+  .btn-secondary:active { transform: scale(0.97); }
+
+  .btn-terra {
+    background-color: #B85C38;
+    color: #ffffff;
+    font-weight: 600;
+    padding: 12px 28px;
+    border-radius: 10px;
+    transition: background-color 0.2s, transform 0.15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .btn-terra:hover { background-color: #9A4A2C; }
+  .btn-terra:active { transform: scale(0.97); }
+
+  /* Input field */
+  .field {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1.5px solid #E5DDD5;
+    border-radius: 10px;
+    background-color: #FFFFFF;
+    color: #1C1208;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .field:focus {
+    border-color: #2A5F1E;
+    box-shadow: 0 0 0 3px rgba(42, 95, 30, 0.12);
+  }
+  .field::placeholder { color: #9E8B7D; }
+
+  /* Section wrapper */
+  .section { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
 }
 
-@keyframes gradientFlow {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+
+/* ── Landing page hover effects (CSS-only, works in Server Components) ── */
+.hero-btn-primary {
+  background-color: #ffffff;
+  color: #1c1c27;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  transition: background-color 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease;
+}
+.hero-btn-primary:hover {
+  background-color: #e4e4f0;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 36px rgba(0,0,0,0.35);
+}
+
+.hero-btn-ghost {
+  background-color: transparent;
+  color: #ffffff;
+  border: 1.5px solid rgba(255,255,255,0.25);
+  transition: background-color 0.25s ease, border-color 0.25s ease, transform 0.2s ease;
+}
+.hero-btn-ghost:hover {
+  background-color: rgba(255,255,255,0.1);
+  border-color: rgba(255,255,255,0.5);
+  transform: translateY(-3px);
+}
+
+.step-card {
+  background-color: #FFFFFF;
+  border: 1px solid #E5DDD5;
+  border-radius: 16px;
+  transition: transform 0.28s ease, box-shadow 0.28s ease;
+  cursor: default;
+}
+.step-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 48px rgba(30,20,10,0.12);
+}
+
+.dark-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #ffffff;
+  color: #1c1c27;
+  font-weight: 700;
+  padding: 16px 32px;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  transition: background-color 0.25s ease, transform 0.2s ease, box-shadow 0.25s ease;
+}
+.dark-cta-btn:hover {
+  background-color: #e4e4f0;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 36px rgba(0,0,0,0.4);
+}
+
+/* Navbar */
+.browse-btn {
+  color: #252535;
+  background-color: transparent;
+  border: 1.5px solid #E5E5EE;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+.browse-btn:hover {
+  background-color: #252535;
+  color: #ffffff !important;
+  border-color: #252535;
+  transform: translateY(-1px);
+}
+.store-btn {
+  color: #B85C38;
+  background-color: transparent;
+  border: 1.5px solid #f0c4b0;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+.store-btn:hover {
+  background-color: #B85C38;
+  color: #ffffff !important;
+  border-color: #B85C38;
+  transform: translateY(-1px);
+}
+.nav-link-item {
+  color: #3D2B1F;
+  transition: color 0.18s ease;
+}
+.nav-link-item:hover { color: #111118; }
+
+.nav-signin {
+  color: #252535;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+.nav-signin:hover { background-color: #F0F0F8; }
+
+.nav-join {
+  background-color: #252535;
+  color: #ffffff;
+  border-radius: 8px;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+.nav-join:hover {
+  background-color: #111118;
+  transform: translateY(-1px);
+}
+
+/* Product cards (buyer page) */
+.product-card {
+  background-color: #FFFFFF;
+  border: 1px solid #E5E5EE;
+  border-radius: 16px;
+  transition: transform 0.28s ease, box-shadow 0.28s ease;
+  overflow: hidden;
+}
+.product-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 48px rgba(20,20,40,0.13);
+}
+.product-card:hover .product-img {
+  transform: scale(1.06);
+}
+.product-img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.025'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.4;
 }

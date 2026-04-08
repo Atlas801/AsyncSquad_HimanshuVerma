@@ -1,28 +1,30 @@
 import type { Metadata } from "next";
-import { Outfit } from "next/font/google";
+import { Inter, Lora } from "next/font/google";
 import "./globals.css";
-import { cn } from "@/lib/utils";
 import NavBar from "@/components/NavBar";
 
-const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit" });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+const lora = Lora({ subsets: ["latin"], style: ["normal", "italic"], variable: "--font-lora" });
 
 export const metadata: Metadata = {
-  title: "EcoMarket | Sustainable Local Products",
-  description: "Discover and order nearby sustainable goods.",
+  title: "EcoMarket — Shop Local, Live Sustainably",
+  description: "Discover handcrafted eco-friendly products from artisans in your neighborhood.",
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={cn(outfit.className, "min-h-screen flex flex-col bg-slate-50")}>
+      <body className={`${inter.variable} ${lora.variable} font-sans min-h-screen`} style={{ fontFamily: "'Inter', system-ui, sans-serif" }}>
         <NavBar />
-        <main className="flex-1 w-full mx-auto">
+        <main className="min-h-[calc(100vh-4rem)]">
           {children}
         </main>
+        <footer className="border-t mt-16 py-12" style={{ borderColor: '#E5DDD5', backgroundColor: '#F5EFE8' }}>
+          <div className="section text-center">
+            <p className="font-serif italic text-lg" style={{ color: '#3D2B1F' }}>EcoMarket</p>
+            <p className="text-sm mt-1" style={{ color: '#9E8B7D' }}>Supporting local artisans · Reducing waste · Building community</p>
+          </div>
+        </footer>
       </body>
     </html>
   );

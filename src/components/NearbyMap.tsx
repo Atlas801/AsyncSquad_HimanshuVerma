@@ -8,7 +8,6 @@ interface NearbyMapProps {
   products: Product[];
 }
 
-// Group products by seller location to get unique seller pins
 function getSellerLocations(products: Product[]) {
   const seen = new Set<string>();
   return products.filter(p => {
@@ -21,18 +20,28 @@ function getSellerLocations(products: Product[]) {
 }
 
 export default function NearbyMap({ products }: NearbyMapProps) {
-  const mapRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const mapInstanceRef = useRef<unknown>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mapRef = useRef<any>(null);
 
   useEffect(() => {
-    if (!mapRef.current || mapInstanceRef.current) return;
+    if (!containerRef.current) return;
 
-    // Dynamic import — Leaflet needs browser APIs
+    // Prevent double-init: if map already exists, tear it down first
+    if (mapRef.current) {
+      mapRef.current.remove();
+      mapRef.current = null;
+    }
+
+    let cancelled = false;
+
     import("leaflet").then((L) => {
+      if (cancelled || !containerRef.current) return;
+
       import("leaflet/dist/leaflet.css");
 
-      // Fix default marker icon paths broken by webpack
+      // Fix default marker icon paths
       delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
       L.Icon.Default.mergeOptions({
         iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
@@ -40,29 +49,30 @@ export default function NearbyMap({ products }: NearbyMapProps) {
         shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
       });
 
-      const map = L.map(mapRef.current!).setView([20.5937, 78.9629], 5);
+      const map = L.map(containerRef.current).setView([20.5937, 78.9629], 5);
+      mapRef.current = map;
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a>',
+        attribution: '&copy; <a href="https://openstreetmap.org">OpenStreetMap</a>',
       }).addTo(map);
 
       const sellers = getSellerLocations(products);
+      const markers: L.LatLngExpression[] = [];
 
       sellers.forEach((product) => {
         if (!product.lat || !product.lng) return;
 
-        // Custom green marker
-        const greenIcon = L.divIcon({
+        const pin = L.divIcon({
           className: "",
           html: `
             <div style="
-              background: #16a34a;
+              background: #252535;
               color: white;
               border-radius: 50% 50% 50% 0;
               transform: rotate(-45deg);
               width: 36px; height: 36px;
               display: flex; align-items: center; justify-content: center;
-              box-shadow: 0 4px 12px rgba(22,163,74,0.4);
+              box-shadow: 0 4px 14px rgba(37,37,53,0.45);
               border: 3px solid white;
             ">
               <span style="transform: rotate(45deg); font-size: 14px;">🌿</span>
@@ -75,53 +85,71 @@ export default function NearbyMap({ products }: NearbyMapProps) {
 
         const sellerProducts = products.filter(p => p.seller_id === product.seller_id);
         const popupContent = `
-          <div style="font-family: sans-serif; min-width: 180px;">
-            <p style="font-weight: 700; font-size: 14px; color: #15803d; margin: 0 0 4px;">${product.seller?.store_name}</p>
-            <p style="color: #6b7280; font-size: 12px; margin: 0 0 8px;">${sellerProducts.length} product${sellerProducts.length > 1 ? 's' : ''} available</p>
-            ${sellerProducts.map(p => `<p style="font-size: 12px; margin: 2px 0; color:#111;">• ${p.title} — ₹${p.price}</p>`).join('')}
-            <a href="/buyer" style="display:block; margin-top: 8px; text-align: center; background: #16a34a; color: white; padding: 6px 0; border-radius: 8px; text-decoration: none; font-size: 12px; font-weight: 700;">Shop Products</a>
+          <div style="font-family: 'Inter', sans-serif; min-width: 200px; padding: 4px 0;">
+            <p style="font-weight: 700; font-size: 14px; color: #252535; margin: 0 0 2px;">${product.seller?.store_name}</p>
+            <p style="color: #9E8B7D; font-size: 11px; margin: 0 0 10px;">${sellerProducts.length} product${sellerProducts.length > 1 ? "s" : ""} available</p>
+            ${sellerProducts.map(p => `<p style="font-size: 12px; margin: 3px 0; color:#3D2B1F;">• ${p.title} — <b style="color:#B85C38;">₹${p.price.toLocaleString("en-IN")}</b></p>`).join("")}
+            <a href="/buyer" style="display:block; margin-top: 10px; text-align: center; background: #252535; color: white; padding: 7px 0; border-radius: 8px; text-decoration: none; font-size: 12px; font-weight: 700;">Shop Products</a>
           </div>
         `;
 
-        const marker = L.marker([product.lat, product.lng], { icon: greenIcon }).addTo(map);
+        const marker = L.marker([product.lat, product.lng], { icon: pin }).addTo(map);
         marker.bindPopup(popupContent);
         marker.on("click", () => setSelectedProduct(product));
+        markers.push([product.lat, product.lng]);
       });
 
-      mapInstanceRef.current = map;
+      // Auto-fit map to show ALL seller markers tightly
+      if (markers.length > 0) {
+        const bounds = L.latLngBounds(markers);
+        map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
+      }
     });
 
     return () => {
-      if (mapInstanceRef.current) {
-        (mapInstanceRef.current as { remove: () => void }).remove();
-        mapInstanceRef.current = null;
+      cancelled = true;
+      if (mapRef.current) {
+        mapRef.current.remove();
+        mapRef.current = null;
       }
     };
   }, [products]);
 
   return (
-    <div className="relative w-full rounded-3xl overflow-hidden border border-gray-100 shadow-2xl shadow-green-900/10">
+    <div className="relative w-full rounded-2xl overflow-hidden" style={{ border: "1px solid #E5E5EE" }}>
       {/* Header badge */}
-      <div className="absolute top-4 left-4 z-[999] bg-white/90 backdrop-blur-md px-4 py-2 rounded-full shadow-lg flex items-center gap-2 text-sm font-bold text-gray-700">
-        <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+      <div
+        className="absolute top-4 left-4 z-[999] px-4 py-2 rounded-full shadow-lg flex items-center gap-2 text-sm font-bold"
+        style={{ backgroundColor: "rgba(255,255,255,0.92)", backdropFilter: "blur(10px)", color: "#252535" }}
+      >
+        <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: "#B85C38"}} />
         {getSellerLocations(products).length} Sellers Near You
       </div>
 
       {/* Leaflet map container */}
-      <div ref={mapRef} className="w-full h-[480px] z-0" />
+      <div ref={containerRef} className="w-full h-[480px] z-0" />
 
       {/* Selected product card */}
       {selectedProduct && (
-        <div className="absolute bottom-4 left-4 right-4 z-[999] bg-white/95 backdrop-blur-md rounded-2xl p-4 shadow-2xl flex items-center gap-4 border border-gray-100">
+        <div
+          className="absolute bottom-4 left-4 right-4 z-[999] rounded-2xl p-4 shadow-2xl flex items-center gap-4"
+          style={{ backgroundColor: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)", border: "1px solid #E5E5EE" }}
+        >
           {selectedProduct.image_url && (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={selectedProduct.image_url} alt={selectedProduct.title} className="w-14 h-14 rounded-xl object-cover flex-shrink-0" />
           )}
           <div className="flex-1 min-w-0">
-            <p className="font-bold text-gray-900 truncate">{selectedProduct.seller?.store_name}</p>
-            <p className="text-xs text-gray-500 truncate">{products.filter(p => p.seller_id === selectedProduct.seller_id).length} products available</p>
+            <p className="font-bold truncate" style={{ color: "#252535" }}>{selectedProduct.seller?.store_name}</p>
+            <p className="text-xs truncate" style={{ color: "#9E8B7D" }}>
+              {products.filter(p => p.seller_id === selectedProduct.seller_id).length} products available
+            </p>
           </div>
-          <Link href={`/product/${selectedProduct.id}`} className="flex-shrink-0 px-4 py-2 bg-green-600 text-white rounded-xl text-sm font-bold hover:bg-green-700 transition">
+          <Link
+            href={`/product/${selectedProduct.id}`}
+            className="flex-shrink-0 px-4 py-2 text-white rounded-xl text-sm font-bold"
+            style={{ backgroundColor: "#252535", transition: "background-color 0.2s" }}
+          >
             View
           </Link>
           <button onClick={() => setSelectedProduct(null)} className="text-gray-300 hover:text-gray-600 transition text-xl leading-none">×</button>

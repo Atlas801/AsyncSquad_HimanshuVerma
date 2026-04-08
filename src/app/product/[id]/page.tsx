@@ -1,65 +1,83 @@
-import { getProductById } from "@/lib/services/products";
+import { INITIAL_PRODUCTS } from "@/lib/productStore";
 import { notFound } from "next/navigation";
 import AddToCartButton from "@/components/AddToCartButton";
 import { Leaf, Store, Package } from "lucide-react";
 
+// We read from the shared INITIAL_PRODUCTS so the page works without Supabase
+// When Supabase is connected, Supabase data will be in productStore via fetchFromDB
 export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const product = await getProductById(id);
 
-  if (!product) {
-    notFound();
-  }
+  // Try to get product from initial list (works for static + mock products)
+  const product = INITIAL_PRODUCTS.find(p => p.id === id) ?? null;
+
+  if (!product) notFound();
 
   return (
-    <div className="py-8 animate-in fade-in slide-in-from-bottom-4 duration-700 max-w-6xl mx-auto px-4 sm:px-6">
-      <div className="bg-white rounded-3xl overflow-hidden shadow-xl shadow-gray-200/50 flex flex-col md:flex-row border border-gray-100">
-
+    <div className="section py-10 max-w-5xl mx-auto">
+      <div className="card overflow-hidden flex flex-col md:flex-row" style={{ borderRadius: "24px" }}>
         {/* Image */}
-        <div className="md:w-1/2 h-[360px] md:h-auto relative bg-gray-50">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={product.image_url || "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=800"}
-            alt={product.title}
-            className="w-full h-full object-cover"
-          />
+        <div className="md:w-1/2 h-72 md:h-auto bg-gray-50 overflow-hidden" style={{ minHeight: "320px" }}>
+          {product.image_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={product.image_url} alt={product.title} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: "#E8F5E3" }}>
+              <Leaf className="w-16 h-16" style={{ color: "#2A5F1E", opacity: 0.3 }} />
+            </div>
+          )}
         </div>
 
         {/* Info */}
-        <div className="md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
-          <div className="flex flex-wrap gap-2 mb-4">
+        <div className="md:w-1/2 p-8 md:p-12 flex flex-col">
+          {/* Store */}
+          {product.seller?.store_name && (
+            <div className="flex items-center gap-2 mb-4">
+              <Store className="w-4 h-4" style={{ color: "#9E8B7D" }} />
+              <span className="text-sm font-semibold uppercase tracking-widest" style={{ color: "#9E8B7D" }}>
+                {product.seller.store_name}
+              </span>
+            </div>
+          )}
+
+          {/* Title */}
+          <h1 className="font-serif text-3xl md:text-4xl font-bold leading-tight mb-5" style={{ color: "#1C1208" }}>
+            {product.title}
+          </h1>
+
+          {/* Eco tags */}
+          <div className="flex flex-wrap gap-2 mb-6">
             {product.eco_tags.map((tag) => (
-              <span key={tag} className="flex items-center gap-1 text-xs font-bold uppercase tracking-wider bg-green-50 text-green-700 px-3 py-1.5 rounded-full border border-green-100">
-                <Leaf className="w-3 h-3" /> {tag}
+              <span key={tag} className="eco-tag">
+                <Leaf className="w-2.5 h-2.5" /> {tag}
               </span>
             ))}
           </div>
 
-          <h1 className="text-4xl font-extrabold text-gray-900 leading-tight mb-4">{product.title}</h1>
+          {/* Description */}
+          <p className="leading-relaxed mb-8" style={{ color: "#6B5747" }}>{product.description}</p>
 
-          <div className="flex items-center gap-4 text-sm text-gray-600 mb-8 pb-8 border-b border-gray-100">
-            <div className="flex items-center gap-1.5 font-medium">
-              <Store className="w-4 h-4 text-gray-400" />
-              {product.seller?.store_name || "Unknown Seller"}
+          {/* Meta */}
+          <div className="flex items-center gap-6 mb-8 pb-8" style={{ borderBottom: "1px solid #E5DDD5" }}>
+            <div className="flex items-center gap-2">
+              <Package className="w-4 h-4" style={{ color: "#9E8B7D" }} />
+              <span className="text-sm font-medium" style={{ color: product.stock_quantity > 0 ? "#2A5F1E" : "#B85C38" }}>
+                {product.stock_quantity > 0 ? `${product.stock_quantity} in stock` : "Out of stock"}
+              </span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <Package className="w-4 h-4 text-gray-400" />
-              {product.stock_quantity > 0 ? `${product.stock_quantity} in stock` : "Out of stock"}
+          </div>
+
+          {/* Price + CTA */}
+          <div className="mt-auto">
+            <div className="flex items-baseline gap-2 mb-4">
+              <span className="font-serif text-4xl font-bold" style={{ color: "#B85C38" }}>
+                ₹{product.price.toLocaleString("en-IN")}
+              </span>
+              <span className="text-sm" style={{ color: "#9E8B7D" }}>incl. all taxes</span>
             </div>
+            <AddToCartButton product={product} />
           </div>
-
-          <div className="mb-8 text-gray-600 leading-relaxed">
-            <p>{product.description}</p>
-          </div>
-
-          <div className="flex items-end gap-4 mb-6">
-            <span className="text-4xl font-extrabold text-gray-900">₹{product.price.toLocaleString("en-IN")}</span>
-            <span className="text-sm text-gray-400 mb-1">incl. all taxes</span>
-          </div>
-
-          <AddToCartButton product={product} />
         </div>
-
       </div>
     </div>
   );

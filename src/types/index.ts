@@ -4,6 +4,7 @@ export interface User {
   id: string;
   role: Role;
   email: string;
+  name: string;
   created_at: string;
 }
 
@@ -23,9 +24,9 @@ export interface Product {
   eco_tags: string[];
   image_url?: string;
   created_at: string;
-  seller?: Seller;
-  lat?: number;  // for map
-  lng?: number;  // for map
+  seller?: Partial<Seller>;
+  lat?: number;
+  lng?: number;
 }
 
 export type OrderStatus = 'pending' | 'processing' | 'completed' | 'cancelled';

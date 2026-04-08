@@ -60,7 +60,6 @@ export default function CheckoutPage() {
               <div key={item.id} className="flex items-center justify-between py-4 group">
                 <div className="flex items-center gap-4">
                   {item.image_url && (
-                    // eslint-disable-next-line @next/next/no-img-element
                     <img src={item.image_url} alt={item.title} className="w-16 h-16 object-cover rounded-xl" />
                   )}
                   <div>

@@ -1,154 +1,202 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getProducts } from "@/lib/services/products";
+import { useProductStore } from "@/lib/productStore";
 import { Product } from "@/types";
 import Link from "next/link";
 import { LayoutGrid, Map, Search, Leaf } from "lucide-react";
 import dynamic from "next/dynamic";
 
-// Dynamic import to avoid SSR for Leaflet
 const NearbyMap = dynamic(() => import("@/components/NearbyMap"), { ssr: false });
 
+function ProductImage({ src, alt }: { src?: string; alt: string }) {
+  const [err, setErr] = useState(false);
+  if (!src || err) {
+    return (
+      <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: "#F0F0F8" }}>
+        <Leaf className="w-10 h-10" style={{ color: "#6b6b8a", opacity: 0.4 }} />
+      </div>
+    );
+  }
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img src={src} alt={alt} onError={() => setErr(true)} className="product-img" />
+  );
+}
+
+const ECO_COLORS: Record<string, { bg: string; text: string }> = {
+  handmade:       { bg: "#FBE9E2", text: "#9A4A2C" },
+  upcycled:       { bg: "#FBE9E2", text: "#9A4A2C" },
+  "plastic-free": { bg: "#EDEDF5", text: "#4a4a6a" },
+  biodegradable:  { bg: "#EDEDF5", text: "#4a4a6a" },
+  organic:        { bg: "#E8F5E3", text: "#2A5F1E" },
+  local:          { bg: "#EDE9E3", text: "#6B5747" },
+  default:        { bg: "#EDE9E3", text: "#6B5747" },
+};
+function tagStyle(tag: string) { return ECO_COLORS[tag.toLowerCase()] ?? ECO_COLORS.default; }
+
 export default function BuyerDashboard() {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const { products, fetchFromDB } = useProductStore();
+  const [filtered, setFiltered] = useState<Product[]>([]);
   const [view, setView] = useState<"grid" | "map">("grid");
   const [search, setSearch] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    getProducts().then((data) => {
-      setProducts(data);
-      setFilteredProducts(data);
-      setLoading(false);
-    });
+    setMounted(true);
+    fetchFromDB();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    if (!search.trim()) {
-      setFilteredProducts(products);
-    } else {
-      const q = search.toLowerCase();
-      setFilteredProducts(
-        products.filter(
-          (p) =>
-            p.title.toLowerCase().includes(q) ||
-            p.description.toLowerCase().includes(q) ||
-            p.eco_tags.some((t) => t.toLowerCase().includes(q)) ||
-            p.seller?.store_name?.toLowerCase().includes(q)
-        )
-      );
-    }
+    if (!search.trim()) { setFiltered(products); return; }
+    const q = search.toLowerCase();
+    setFiltered(products.filter(p =>
+      p.title.toLowerCase().includes(q) ||
+      p.description.toLowerCase().includes(q) ||
+      p.eco_tags.some(t => t.toLowerCase().includes(q)) ||
+      p.seller?.store_name?.toLowerCase().includes(q)
+    ));
   }, [search, products]);
 
+  if (!mounted) {
+    return (
+      <div className="px-6 sm:px-10 lg:px-16 py-12 max-w-screen-xl mx-auto">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <div key={i} className="rounded-2xl h-72 animate-pulse" style={{ backgroundColor: "#E5E5EE" }} />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 animate-in fade-in duration-700">
+    /* ─── outer wrapper with generous side margins ─── */
+    <div className="px-6 sm:px-10 lg:px-16 py-10 max-w-screen-xl mx-auto">
+
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-600 to-emerald-500">
-          Discover Local Goods
+        <h1 className="font-serif text-4xl font-bold" style={{ color: "#111118" }}>
+          The Market
         </h1>
-        <p className="text-gray-500 mt-2">Support sustainable products in your neighborhood.</p>
+        <p className="mt-2" style={{ color: "#6B5747" }}>
+          {filtered.length} sustainable {filtered.length === 1 ? "product" : "products"} from local artisans
+        </p>
       </div>
 
-      {/* Search + View Toggle Bar */}
+      {/* Controls bar */}
       <div className="flex flex-col sm:flex-row gap-3 mb-8">
+        {/* Search */}
         <div className="relative flex-1">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: "#9E8B7D" }} />
           <input
-            type="text"
-            placeholder="Search products, stores, eco-tags…"
-            value={search}
+            type="text" value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-12 pr-4 py-3.5 rounded-2xl border border-gray-200 bg-white shadow-sm focus:ring-2 focus:ring-green-500 focus:border-green-500 outline-none transition text-gray-800 placeholder-gray-400"
+            placeholder="Search products, stores, eco-tags…"
+            className="field"
+            style={{ paddingLeft: "40px" }}
           />
         </div>
 
-        <div className="flex gap-2 bg-gray-100 rounded-2xl p-1.5 self-start sm:self-auto">
-          <button
-            onClick={() => setView("grid")}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
-              view === "grid"
-                ? "bg-white text-green-700 shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            <LayoutGrid className="w-4 h-4" /> Grid
-          </button>
-          <button
-            onClick={() => setView("map")}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
-              view === "map"
-                ? "bg-white text-green-700 shadow-sm"
-                : "text-gray-500 hover:text-gray-700"
-            }`}
-          >
-            <Map className="w-4 h-4" /> Nearby Map
-          </button>
+        {/* View toggle */}
+        <div
+          className="flex overflow-hidden rounded-xl self-start sm:self-auto"
+          style={{ border: "1px solid #E5DDD5", backgroundColor: "#FFFFFF" }}
+        >
+          {[
+            { v: "grid" as const, label: "Grid", Icon: LayoutGrid },
+            { v: "map"  as const, label: "Map",  Icon: Map },
+          ].map(({ v, label, Icon }) => (
+            <button
+              key={v}
+              onClick={() => setView(v)}
+              className="flex items-center gap-2 px-5 py-2.5 text-sm font-semibold"
+              style={{
+                backgroundColor: view === v ? "#252535" : "transparent",
+                color: view === v ? "#FFFFFF" : "#6B5747",
+                transition: "background-color 0.2s ease, color 0.2s ease",
+              }}
+            >
+              <Icon className="w-4 h-4" />{label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* Map View */}
+      {/* Map view */}
       {view === "map" && (
         <div className="mb-10">
           <NearbyMap products={products} />
         </div>
       )}
 
-      {/* Grid View */}
+      {/* Grid view */}
       {view === "grid" && (
-        <>
-          {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="bg-gray-100 rounded-2xl h-80 animate-pulse" />
-              ))}
-            </div>
-          ) : filteredProducts.length === 0 ? (
-            <div className="text-center py-24">
-              <p className="text-4xl mb-4">🌿</p>
-              <h3 className="text-xl font-bold text-gray-700">No products found</h3>
-              <p className="text-gray-400 mt-2">Try a different search term.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {filteredProducts.map((product) => (
-                <Link href={`/product/${product.id}`} key={product.id}>
-                  <div className="group bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl hover:shadow-green-500/10 hover:-translate-y-1 transition-all duration-300 flex flex-col h-full">
-                    <div className="relative h-52 w-full bg-gray-100 overflow-hidden">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={product.image_url || "https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=400"}
-                        alt={product.title}
-                        className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700 ease-out"
-                      />
-                      <div className="absolute top-3 right-3 flex flex-wrap justify-end gap-1 max-w-[80%]">
-                        {product.eco_tags.slice(0, 2).map((tag) => (
-                          <span key={tag} className="text-[10px] font-bold uppercase tracking-wider bg-white/95 backdrop-blur-sm text-green-700 px-2 py-0.5 rounded-full shadow-sm flex items-center gap-1">
-                            <Leaf className="w-2.5 h-2.5" />{tag}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="p-4 flex-1 flex flex-col">
-                      <h3 className="font-bold text-gray-900 leading-tight group-hover:text-green-600 transition line-clamp-2">{product.title}</h3>
-                      <p className="text-sm text-gray-500 mt-1.5 line-clamp-2 leading-relaxed">{product.description}</p>
-                      <div className="mt-auto pt-3 flex items-center justify-between border-t border-gray-50">
-                        <span className="font-extrabold text-xl text-gray-900">₹{product.price.toLocaleString("en-IN")}</span>
-                        {product.seller && (
-                          <span className="text-xs font-medium text-gray-400 bg-gray-50 px-2 py-1 rounded-md truncate max-w-[55%]">
-                            {product.seller.store_name}
-                          </span>
-                        )}
-                      </div>
+        filtered.length === 0 ? (
+          <div className="text-center py-24">
+            <p className="text-5xl mb-4">🌿</p>
+            <h3 className="font-serif text-2xl font-bold" style={{ color: "#252535" }}>Nothing found</h3>
+            <p className="mt-2" style={{ color: "#9E8B7D" }}>Try a different search term.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            {filtered.map((product) => (
+              <Link key={product.id} href={`/product/${product.id}`}>
+                <article className="product-card flex flex-col h-full">
+                  {/* Image */}
+                  <div className="relative h-48 overflow-hidden" style={{ borderRadius: "16px 16px 0 0" }}>
+                    <ProductImage src={product.image_url} alt={product.title} />
+
+                    {/* Eco tags */}
+                    <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5">
+                      {product.eco_tags.slice(0, 2).map(tag => (
+                        <span key={tag} className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ backgroundColor: tagStyle(tag).bg, color: tagStyle(tag).text }}>
+                          {tag}
+                        </span>
+                      ))}
                     </div>
                   </div>
-                </Link>
-              ))}
-            </div>
-          )}
-        </>
+
+                  {/* Card body */}
+                  <div className="p-4 flex-1 flex flex-col">
+                    {product.seller?.store_name && (
+                      <p
+                        className="text-[10px] font-bold uppercase tracking-widest mb-1.5"
+                        style={{ color: "#9E8B7D" }}
+                      >
+                        {product.seller.store_name}
+                      </p>
+                    )}
+                    <h3
+                      className="font-serif font-bold leading-snug mb-auto"
+                      style={{
+                        color: "#111118",
+                        transition: "color 0.2s ease",
+                      }}
+                    >
+                      {product.title}
+                    </h3>
+
+                    <div
+                      className="flex items-center justify-between mt-3 pt-3"
+                      style={{ borderTop: "1px solid #EDEDF5" }}
+                    >
+                      <span className="font-bold text-lg" style={{ color: "#B85C38" }}>
+                        ₹{product.price.toLocaleString("en-IN")}
+                      </span>
+                      {product.stock_quantity === 0 && (
+                        <span className="text-xs font-semibold" style={{ color: "#9E8B7D" }}>
+                          Sold out
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </article>
+              </Link>
+            ))}
+          </div>
+        )
       )}
     </div>
   );
