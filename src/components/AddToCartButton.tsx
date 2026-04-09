@@ -1,19 +1,36 @@
 "use client";
 
 import { useCartStore } from "@/lib/cart";
+import { useAuthStore } from "@/lib/authStore";
 import { Product } from "@/types";
-import { ShoppingCart, Check } from "lucide-react";
+import { ShoppingCart, Check, Store } from "lucide-react";
 import { useState } from "react";
 
 export default function AddToCartButton({ product }: { product: Product }) {
   const addItem = useCartStore((state) => state.addItem);
+  const user = useAuthStore((state) => state.user);
   const [added, setAdded] = useState(false);
 
+  const isSeller = user?.role === "seller";
+
   const handleAdd = () => {
+    if (isSeller) return;
     addItem(product);
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
   };
+
+  if (isSeller) {
+    return (
+      <div className="w-full py-4 rounded-xl font-bold flex flex-col justify-center items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-700 cursor-not-allowed">
+        <div className="flex items-center gap-2">
+          <Store className="w-5 h-5" />
+          <span>Sellers cannot purchase products</span>
+        </div>
+        <span className="text-xs font-normal text-amber-500">Switch to a buyer account to shop</span>
+      </div>
+    );
+  }
 
   return (
     <button

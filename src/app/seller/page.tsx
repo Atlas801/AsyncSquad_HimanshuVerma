@@ -4,9 +4,9 @@ import { Package, TrendingUp, Users, IndianRupee, Plus, ChevronRight, Clock } fr
 import Link from "next/link";
 
 const MOCK_PRODUCTS = [
-  { id: "p1", title: "Upcycled Denim Tote Bag", price: 2999, stock: 10, image: "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?q=80&w=100&auto=format&fit=crop" },
-  { id: "p2", title: "Bamboo Toothbrush Pack", price: 499, stock: 50, image: "https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?q=80&w=100&auto=format&fit=crop" },
-  { id: "p6", title: "Khadi Cotton Tote", price: 1199, stock: 40, image: "https://images.unsplash.com/photo-1594938298603-c8148c4b4fb2?q=80&w=100&auto=format&fit=crop" },
+  { id: "p1", title: "Upcycled Denim Tote Bag", price: 2999, stock: 10, image: "https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=100&auto=format&fit=crop" },
+  { id: "p2", title: "Bamboo Toothbrush Pack", price: 499, stock: 50, image: "https://images.unsplash.com/photo-1607613009820-a29f7bb81c04?q=80&w=100&auto=format&fit=crop" },
+  { id: "p6", title: "Khadi Cotton Kurta", price: 1799, stock: 15, image: "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?q=80&w=100&auto=format&fit=crop" },
 ];
 
 const MOCK_ORDERS = [
@@ -25,7 +25,6 @@ const STATUS_STYLES: Record<string, string> = {
 export default function SellerDashboard() {
   return (
     <div className="py-8 animate-in fade-in max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-extrabold text-gray-900">Seller Dashboard</h1>
@@ -39,7 +38,6 @@ export default function SellerDashboard() {
         </Link>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
         {[
           { label: "Total Revenue", value: "₹1,24,050", icon: IndianRupee, color: "text-green-600", bg: "bg-green-50" },
@@ -58,7 +56,6 @@ export default function SellerDashboard() {
       </div>
 
       <div className="grid lg:grid-cols-5 gap-6">
-        {/* Active Products - responsive card grid */}
         <div className="lg:col-span-2">
           <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
             <div className="flex items-center justify-between p-6 border-b border-gray-50">
@@ -72,7 +69,6 @@ export default function SellerDashboard() {
             <div className="divide-y divide-gray-50">
               {MOCK_PRODUCTS.map((p) => (
                 <div key={p.id} className="flex items-center gap-4 p-4 hover:bg-gray-50/50 transition group">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={p.image} alt={p.title} className="w-12 h-12 rounded-xl object-cover flex-shrink-0 border border-gray-100" />
                   <div className="flex-1 min-w-0">
                     <p className="font-semibold text-gray-900 text-sm truncate">{p.title}</p>
@@ -93,7 +89,6 @@ export default function SellerDashboard() {
           </div>
         </div>
 
-        {/* Pending Orders */}
         <div className="lg:col-span-3">
           <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
             <div className="flex items-center justify-between p-6 border-b border-gray-50">
@@ -105,7 +100,6 @@ export default function SellerDashboard() {
               </span>
             </div>
 
-            {/* Mobile: card stack */}
             <div className="sm:hidden divide-y divide-gray-50">
               {MOCK_ORDERS.map((order) => (
                 <div key={order.id} className="p-4 space-y-2">
@@ -126,7 +120,6 @@ export default function SellerDashboard() {
               ))}
             </div>
 
-            {/* Desktop: table */}
             <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-left">
                 <thead className="bg-gray-50/50 border-b border-gray-50 text-xs font-bold text-gray-400 uppercase tracking-wider">

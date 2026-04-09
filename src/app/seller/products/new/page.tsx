@@ -11,7 +11,7 @@ async function uploadImage(file: File): Promise<string> {
   const formData = new FormData();
   formData.append("file", file);
   const res = await fetch("/api/upload", { method: "POST", body: formData });
-  if (!res.ok) return URL.createObjectURL(file); // local preview fallback
+  if (!res.ok) return URL.createObjectURL(file);
   const data = await res.json();
   return data.url as string;
 }
@@ -34,7 +34,6 @@ export default function NewProductPage() {
 
   if (!mounted) return null;
 
-  // Route guard – only sellers can access
   if (!user) {
     return (
       <div className="section py-24 text-center">
@@ -104,7 +103,6 @@ export default function NewProductPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="card p-8 space-y-6">
-        {/* Image drop zone */}
         <div>
           <label className="block text-sm font-semibold mb-2" style={{ color: "#3D2B1F" }}>Product Photo</label>
           <div
@@ -122,7 +120,6 @@ export default function NewProductPage() {
 
             {imagePreview ? (
               <div className="relative h-56">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                 {uploading && (
                   <div className="absolute inset-0 flex items-center justify-center" style={{ backgroundColor: "rgba(0,0,0,0.4)" }}>

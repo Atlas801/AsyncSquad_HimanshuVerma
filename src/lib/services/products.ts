@@ -2,7 +2,7 @@ import { supabase } from '../supabase';
 import { Product } from '@/types';
 
 export const getProducts = async (): Promise<Product[]> => {
-  if (!supabase) return MOCK_PRODUCTS; // Skip DB call if not configured
+  if (!supabase) return MOCK_PRODUCTS;
 
   const { data, error } = await supabase
     .from('products')
@@ -50,7 +50,6 @@ export const createProduct = async (product: Partial<Product>) => {
   return data;
 };
 
-// --- MOCK DATA: 10 Indian Eco Products (prices in INR) ---
 export const MOCK_PRODUCTS: Product[] = [
   {
     id: 'p1',
@@ -60,7 +59,7 @@ export const MOCK_PRODUCTS: Product[] = [
     price: 2999,
     stock_quantity: 10,
     eco_tags: ['upcycled', 'handmade'],
-    image_url: 'https://images.unsplash.com/photo-1590874103328-eac38a683ce7?q=80&w=600&auto=format&fit=crop',
+    image_url: 'https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=600&auto=format&fit=crop',
     created_at: new Date().toISOString(),
     seller: { id: 's1', role: 'seller', email: 'seller@test.com', store_name: 'Eco Threads Co.', created_at: '' },
     lat: 28.6139,
@@ -74,7 +73,7 @@ export const MOCK_PRODUCTS: Product[] = [
     price: 499,
     stock_quantity: 50,
     eco_tags: ['plastic-free', 'biodegradable'],
-    image_url: 'https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?q=80&w=600&auto=format&fit=crop',
+    image_url: 'https://images.unsplash.com/photo-1607613009820-a29f7bb81c04?q=80&w=600&auto=format&fit=crop',
     created_at: new Date().toISOString(),
     seller: { id: 's2', role: 'seller', email: 's2@test.com', store_name: 'Green Smile', created_at: '' },
     lat: 19.0760,
@@ -88,7 +87,7 @@ export const MOCK_PRODUCTS: Product[] = [
     price: 849,
     stock_quantity: 30,
     eco_tags: ['local', 'handmade', 'plastic-free'],
-    image_url: 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?q=80&w=600&auto=format&fit=crop',
+    image_url: 'https://images.unsplash.com/photo-1597484661643-2f5fef640dd1?q=80&w=600&auto=format&fit=crop',
     created_at: new Date().toISOString(),
     seller: { id: 's3', role: 'seller', email: 's3@test.com', store_name: 'Jute Wala', created_at: '' },
     lat: 22.5726,
@@ -102,7 +101,7 @@ export const MOCK_PRODUCTS: Product[] = [
     price: 349,
     stock_quantity: 75,
     eco_tags: ['organic', 'local', 'pesticide-free'],
-    image_url: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?q=80&w=600&auto=format&fit=crop',
+    image_url: 'https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?q=80&w=600&auto=format&fit=crop',
     created_at: new Date().toISOString(),
     seller: { id: 's4', role: 'seller', email: 's4@test.com', store_name: 'Nilgiri Naturals', created_at: '' },
     lat: 11.4064,
@@ -130,7 +129,7 @@ export const MOCK_PRODUCTS: Product[] = [
     price: 1199,
     stock_quantity: 40,
     eco_tags: ['khadi', 'compostable', 'handspun'],
-    image_url: 'https://images.unsplash.com/photo-1594938298603-c8148c4b4fb2?q=80&w=600&auto=format&fit=crop',
+    image_url: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?q=80&w=600&auto=format&fit=crop',
     created_at: new Date().toISOString(),
     seller: { id: 's1', role: 'seller', email: 'seller@test.com', store_name: 'Eco Threads Co.', created_at: '' },
     lat: 28.6139,
@@ -144,7 +143,7 @@ export const MOCK_PRODUCTS: Product[] = [
     price: 749,
     stock_quantity: 60,
     eco_tags: ['reusable', 'plastic-free', 'beeswax'],
-    image_url: 'https://images.unsplash.com/photo-1584742593842-58a9a85c3d52?q=80&w=600&auto=format&fit=crop',
+    image_url: 'https://images.unsplash.com/photo-1610557892470-55d9e80c0eb2?q=80&w=600&auto=format&fit=crop',
     created_at: new Date().toISOString(),
     seller: { id: 's6', role: 'seller', email: 's6@test.com', store_name: 'Bee & Bloom', created_at: '' },
     lat: 12.9716,
@@ -158,7 +157,7 @@ export const MOCK_PRODUCTS: Product[] = [
     price: 199,
     stock_quantity: 100,
     eco_tags: ['natural', 'biodegradable', 'ayurvedic'],
-    image_url: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?q=80&w=600&auto=format&fit=crop',
+    image_url: 'https://images.unsplash.com/photo-1590159983013-d4ff5fc71c1d?q=80&w=600&auto=format&fit=crop',
     created_at: new Date().toISOString(),
     seller: { id: 's6', role: 'seller', email: 's6@test.com', store_name: 'Bee & Bloom', created_at: '' },
     lat: 12.9716,
@@ -172,7 +171,7 @@ export const MOCK_PRODUCTS: Product[] = [
     price: 449,
     stock_quantity: 35,
     eco_tags: ['recycled', 'zero-waste', 'plantable'],
-    image_url: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=600&auto=format&fit=crop',
+    image_url: 'https://images.unsplash.com/photo-1531346878377-a5be20888e57?q=80&w=600&auto=format&fit=crop',
     created_at: new Date().toISOString(),
     seller: { id: 's7', role: 'seller', email: 's7@test.com', store_name: 'Kaagaz Studio', created_at: '' },
     lat: 18.5204,
@@ -186,7 +185,7 @@ export const MOCK_PRODUCTS: Product[] = [
     price: 599,
     stock_quantity: 45,
     eco_tags: ['bamboo', 'plastic-free', 'travel'],
-    image_url: 'https://images.unsplash.com/photo-1563208645-30a22f7bd600?q=80&w=600&auto=format&fit=crop',
+    image_url: 'https://images.unsplash.com/photo-1584346133934-a3afd2a33c4c?q=80&w=600&auto=format&fit=crop',
     created_at: new Date().toISOString(),
     seller: { id: 's7', role: 'seller', email: 's7@test.com', store_name: 'Kaagaz Studio', created_at: '' },
     lat: 18.5204,

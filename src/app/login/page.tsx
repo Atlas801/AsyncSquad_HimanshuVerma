@@ -30,7 +30,6 @@ export default function LoginPage() {
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-16">
       <div className="w-full max-w-md">
-        {/* Logo mark */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4" style={{ backgroundColor: "#2A5F1E" }}>
             <Leaf className="w-7 h-7 text-white" />
@@ -39,7 +38,6 @@ export default function LoginPage() {
           <p className="mt-2 text-sm" style={{ color: "#6B5747" }}>Sign in to your EcoMarket account</p>
         </div>
 
-        {/* Demo quick-fill */}
         <div className="card p-4 mb-6">
           <p className="text-xs font-bold uppercase tracking-wider mb-3" style={{ color: "#9E8B7D" }}>Try a demo account</p>
           <div className="grid grid-cols-3 gap-2">
@@ -51,7 +49,6 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="card p-8 space-y-5">
           <div>
             <label className="block text-sm font-semibold mb-2" style={{ color: "#3D2B1F" }}>Email address</label>

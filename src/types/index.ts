@@ -19,7 +19,7 @@ export interface Product {
   seller_id: string;
   title: string;
   description: string;
-  price: number; // in INR
+  price: number;
   stock_quantity: number;
   eco_tags: string[];
   image_url?: string;

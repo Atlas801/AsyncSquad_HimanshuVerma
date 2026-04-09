@@ -6,35 +6,7 @@ import { useRouter } from "next/navigation";
 import { ShoppingBag, Clock, CheckCircle, XCircle } from "lucide-react";
 import Link from "next/link";
 
-type MockOrder = {
-  id: string;
-  date: string;
-  status: "pending" | "processing" | "completed" | "cancelled";
-  items: { title: string; qty: number; price: number }[];
-  total: number;
-};
-
-const MOCK_ORDERS: MockOrder[] = [
-  {
-    id: "ORD-001",
-    date: "2 Apr 2026",
-    status: "completed",
-    items: [
-      { title: "Bamboo Toothbrush (Pack of 4)", qty: 2, price: 499 },
-      { title: "Natural Neem Wood Comb",        qty: 1, price: 199 },
-    ],
-    total: 1197,
-  },
-  {
-    id: "ORD-002",
-    date: "5 Apr 2026",
-    status: "processing",
-    items: [
-      { title: "Plantable Seed Notebook", qty: 1, price: 449 },
-    ],
-    total: 449,
-  },
-];
+import { useOrderStore } from "@/lib/orderStore";
 
 const STATUS_MAP = {
   pending:    { label: "Pending",    Icon: Clock,         bg: "#FBE9E2", color: "#9A4A2C" },
@@ -45,6 +17,7 @@ const STATUS_MAP = {
 
 export default function BuyerOrdersPage() {
   const { user } = useAuthStore();
+  const { orders } = useOrderStore();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
 
@@ -64,14 +37,16 @@ export default function BuyerOrdersPage() {
     );
   }
 
+  const myOrders = orders.filter(o => o.buyer_id === user.id);
+
   return (
     <div className="px-6 sm:px-10 lg:px-16 py-10 max-w-screen-xl mx-auto">
       <div className="mb-8">
         <h1 className="font-serif text-4xl font-bold" style={{ color: "#111118" }}>My Orders</h1>
         <p className="mt-2" style={{ color: "#6B5747" }}>Track everything you&apos;ve ordered from local artisans.</p>
       </div>
-
-      {MOCK_ORDERS.length === 0 ? (
+      
+      {myOrders.length === 0 ? (
         <div className="step-card p-16 text-center">
           <ShoppingBag className="w-14 h-14 mx-auto mb-5" style={{ color: "#E5DDD5" }} />
           <h3 className="font-serif text-2xl font-bold mb-2" style={{ color: "#111118" }}>No orders yet</h3>
@@ -80,11 +55,10 @@ export default function BuyerOrdersPage() {
         </div>
       ) : (
         <div className="space-y-5">
-          {MOCK_ORDERS.map((order) => {
+          {myOrders.map((order) => {
             const { label, Icon, bg, color } = STATUS_MAP[order.status];
             return (
               <div key={order.id} className="step-card p-6">
-                {/* Order header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-5" style={{ borderBottom: "1px solid #E5E5EE" }}>
                   <div>
                     <p className="font-bold text-sm" style={{ color: "#111118" }}>{order.id}</p>
@@ -95,7 +69,6 @@ export default function BuyerOrdersPage() {
                   </div>
                 </div>
 
-                {/* Items */}
                 <div className="space-y-2 mb-5">
                   {order.items.map((item, i) => (
                     <div key={i} className="flex justify-between items-center text-sm">
@@ -105,7 +78,6 @@ export default function BuyerOrdersPage() {
                   ))}
                 </div>
 
-                {/* Total */}
                 <div className="flex justify-between items-center pt-4" style={{ borderTop: "1px solid #E5E5EE" }}>
                   <span className="text-sm font-semibold" style={{ color: "#6B5747" }}>Order Total</span>
                   <span className="font-bold text-lg" style={{ color: "#111118" }}>₹{order.total.toLocaleString("en-IN")}</span>

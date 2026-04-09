@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useAuthStore } from "@/lib/authStore";
 import { useCartStore } from "@/lib/cart";
-import { ShoppingBasket, Leaf, LogOut, User, Store, LayoutDashboard, ChevronDown } from "lucide-react";
+import { ShoppingBasket, Leaf, LogOut, User, Store, LayoutDashboard, ChevronDown, Menu, X } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 
 export default function NavBar() {
@@ -11,6 +11,7 @@ export default function NavBar() {
   const items = useCartStore((state) => state.items);
   const cartCount = items.reduce((t, i) => t + i.cartQuantity, 0);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -23,6 +24,9 @@ export default function NavBar() {
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
+  // Close mobile menu on route change (via link click)
+  const closeMobile = () => setMobileMenuOpen(false);
+
   const roleLabel: Record<string, string> = {
     buyer: "Buyer",
     seller: "Seller",
@@ -32,7 +36,6 @@ export default function NavBar() {
   return (
     <header style={{ backgroundColor: "#FAF6F0", borderBottom: "1px solid #E5DDD5" }} className="sticky top-0 z-50">
       <nav className="section flex items-center justify-between h-16">
-        {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">
           <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: "#2A5F1E" }}>
             <Leaf className="w-4 h-4 text-white" />
@@ -40,7 +43,7 @@ export default function NavBar() {
           <span className="font-serif font-bold text-xl" style={{ color: "#1C1208" }}>EcoMarket</span>
         </Link>
 
-        {/* Centre nav */}
+        {/* Desktop nav links */}
         <div className="hidden md:flex items-center gap-6">
           <Link href="/buyer" className="browse-btn text-sm font-semibold px-4 py-2 rounded-lg">
             Browse Market
@@ -55,21 +58,22 @@ export default function NavBar() {
           )}
         </div>
 
-        {/* Right side */}
-        <div className="flex items-center gap-3">
-          {/* Cart */}
-          <Link href="/checkout" className="relative p-2 rounded-lg hover:bg-amber-50 transition">
-            <ShoppingBasket className="w-5 h-5" style={{ color: "#3D2B1F" }} />
-            {cartCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full text-white text-[10px] font-bold flex items-center justify-center" style={{ backgroundColor: "#B85C38" }}>
-                {cartCount}
-              </span>
-            )}
-          </Link>
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Cart – always visible */}
+          {user?.role !== "seller" && (
+            <Link href="/checkout" className="relative p-2 rounded-lg hover:bg-amber-50 transition">
+              <ShoppingBasket className="w-5 h-5" style={{ color: "#3D2B1F" }} />
+              {cartCount > 0 && (
+                <span className="absolute -top-0.5 -right-0.5 w-5 h-5 rounded-full text-white text-[10px] font-bold flex items-center justify-center" style={{ backgroundColor: "#B85C38" }}>
+                  {cartCount}
+                </span>
+              )}
+            </Link>
+          )}
 
-          {/* Auth */}
+          {/* Desktop user menu */}
           {user ? (
-            <div className="relative" ref={menuRef}>
+            <div className="relative hidden md:block" ref={menuRef}>
               <button
                 onClick={() => setMenuOpen(!menuOpen)}
                 className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-amber-50 transition"
@@ -78,7 +82,7 @@ export default function NavBar() {
                 <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: "#2A5F1E" }}>
                   {user.name.charAt(0).toUpperCase()}
                 </div>
-                <div className="hidden sm:block text-left">
+                <div className="text-left">
                   <p className="text-xs font-semibold" style={{ color: "#1C1208" }}>{user.name}</p>
                   <p className="text-[10px]" style={{ color: "#9E8B7D" }}>{roleLabel[user.role]}</p>
                 </div>
@@ -119,7 +123,7 @@ export default function NavBar() {
               )}
             </div>
           ) : (
-            <div className="flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2">
               <Link href="/login" className="nav-signin text-sm font-semibold px-4 py-2">
                 Sign In
               </Link>
@@ -128,8 +132,113 @@ export default function NavBar() {
               </Link>
             </div>
           )}
+
+          {/* Mobile hamburger button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden p-2 rounded-lg hover:bg-amber-50 transition"
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? (
+              <X className="w-5 h-5" style={{ color: "#3D2B1F" }} />
+            ) : (
+              <Menu className="w-5 h-5" style={{ color: "#3D2B1F" }} />
+            )}
+          </button>
         </div>
       </nav>
+
+      {/* Mobile menu overlay */}
+      {mobileMenuOpen && (
+        <div className="md:hidden border-t" style={{ borderColor: "#E5DDD5", backgroundColor: "#FAF6F0" }}>
+          <div className="px-4 py-4 space-y-2">
+            <Link
+              href="/buyer"
+              onClick={closeMobile}
+              className="block w-full text-left px-4 py-3 rounded-xl text-sm font-semibold transition hover:bg-white"
+              style={{ color: "#3D2B1F" }}
+            >
+              Browse Market
+            </Link>
+
+            {user?.role === "seller" && (
+              <Link
+                href="/seller"
+                onClick={closeMobile}
+                className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition hover:bg-white"
+                style={{ color: "#B85C38" }}
+              >
+                <Store className="w-4 h-4" /> My Store
+              </Link>
+            )}
+
+            {user?.role === "admin" && (
+              <Link
+                href="/admin"
+                onClick={closeMobile}
+                className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition hover:bg-white"
+                style={{ color: "#3D2B1F" }}
+              >
+                <LayoutDashboard className="w-4 h-4" /> Admin Panel
+              </Link>
+            )}
+
+            {user ? (
+              <>
+                <div className="pt-2 mt-2" style={{ borderTop: "1px solid #E5DDD5" }}>
+                  <div className="flex items-center gap-3 px-4 py-2">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ backgroundColor: "#2A5F1E" }}>
+                      {user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold" style={{ color: "#1C1208" }}>{user.name}</p>
+                      <p className="text-xs" style={{ color: "#9E8B7D" }}>{user.email}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {user.role === "buyer" && (
+                  <Link
+                    href="/buyer/orders"
+                    onClick={closeMobile}
+                    className="flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition hover:bg-white"
+                    style={{ color: "#3D2B1F" }}
+                  >
+                    <User className="w-4 h-4" /> My Orders
+                  </Link>
+                )}
+
+                <button
+                  onClick={() => { logout(); closeMobile(); }}
+                  className="w-full flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition hover:bg-red-50 text-left"
+                  style={{ color: "#B85C38" }}
+                >
+                  <LogOut className="w-4 h-4" /> Sign Out
+                </button>
+              </>
+            ) : (
+              <div className="flex gap-2 pt-2 mt-2" style={{ borderTop: "1px solid #E5DDD5" }}>
+                <Link
+                  href="/login"
+                  onClick={closeMobile}
+                  className="flex-1 text-center py-3 rounded-xl text-sm font-semibold transition hover:bg-white"
+                  style={{ color: "#252535", border: "1px solid #E5DDD5" }}
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/signup"
+                  onClick={closeMobile}
+                  className="flex-1 text-center py-3 rounded-xl text-sm font-semibold text-white transition"
+                  style={{ backgroundColor: "#252535" }}
+                >
+                  Join
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </header>
   );
 }

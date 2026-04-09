@@ -13,14 +13,15 @@ function ProductImage({ src, alt }: { src?: string; alt: string }) {
   const [err, setErr] = useState(false);
   if (!src || err) {
     return (
-      <div className="w-full h-full flex items-center justify-center" style={{ backgroundColor: "#F0F0F8" }}>
+      <div className="w-full h-full flex flex-col items-center justify-center gap-2" style={{ backgroundColor: "#F0F0F8" }}>
         <Leaf className="w-10 h-10" style={{ color: "#6b6b8a", opacity: 0.4 }} />
+        <span className="text-xs font-medium" style={{ color: "#9E8B7D" }}>No image</span>
       </div>
     );
   }
   return (
     // eslint-disable-next-line @next/next/no-img-element
-    <img src={src} alt={alt} onError={() => setErr(true)} className="product-img" />
+    <img src={src} alt={alt} onError={() => setErr(true)} className="product-img" loading="lazy" />
   );
 }
 
@@ -61,8 +62,8 @@ export default function BuyerDashboard() {
 
   if (!mounted) {
     return (
-      <div className="px-6 sm:px-10 lg:px-16 py-12 max-w-screen-xl mx-auto">
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div className="px-4 sm:px-6 md:px-10 lg:px-16 py-12 max-w-screen-xl mx-auto">
+        <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
           {Array.from({ length: 8 }).map((_, i) => (
             <div key={i} className="rounded-2xl h-72 animate-pulse" style={{ backgroundColor: "#E5E5EE" }} />
           ))}
@@ -72,22 +73,18 @@ export default function BuyerDashboard() {
   }
 
   return (
-    /* ─── outer wrapper with generous side margins ─── */
-    <div className="px-6 sm:px-10 lg:px-16 py-10 max-w-screen-xl mx-auto">
+    <div className="px-4 sm:px-6 md:px-10 lg:px-16 py-8 sm:py-10 max-w-screen-xl mx-auto">
 
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="font-serif text-4xl font-bold" style={{ color: "#111118" }}>
+      <div className="mb-6 sm:mb-8">
+        <h1 className="font-serif text-3xl sm:text-4xl font-bold" style={{ color: "#111118" }}>
           The Market
         </h1>
-        <p className="mt-2" style={{ color: "#6B5747" }}>
+        <p className="mt-2 text-sm sm:text-base" style={{ color: "#6B5747" }}>
           {filtered.length} sustainable {filtered.length === 1 ? "product" : "products"} from local artisans
         </p>
       </div>
 
-      {/* Controls bar */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-8">
-        {/* Search */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-6 sm:mb-8">
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none" style={{ color: "#9E8B7D" }} />
           <input
@@ -99,9 +96,8 @@ export default function BuyerDashboard() {
           />
         </div>
 
-        {/* View toggle */}
         <div
-          className="flex overflow-hidden rounded-xl self-start sm:self-auto"
+          className="flex overflow-hidden rounded-xl self-start sm:self-auto shrink-0"
           style={{ border: "1px solid #E5DDD5", backgroundColor: "#FFFFFF" }}
         >
           {[
@@ -124,14 +120,12 @@ export default function BuyerDashboard() {
         </div>
       </div>
 
-      {/* Map view */}
       {view === "map" && (
         <div className="mb-10">
           <NearbyMap products={products} />
         </div>
       )}
 
-      {/* Grid view */}
       {view === "grid" && (
         filtered.length === 0 ? (
           <div className="text-center py-24">
@@ -140,15 +134,13 @@ export default function BuyerDashboard() {
             <p className="mt-2" style={{ color: "#9E8B7D" }}>Try a different search term.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
             {filtered.map((product) => (
               <Link key={product.id} href={`/product/${product.id}`}>
                 <article className="product-card flex flex-col h-full">
-                  {/* Image */}
-                  <div className="relative h-48 overflow-hidden" style={{ borderRadius: "16px 16px 0 0" }}>
+                  <div className="relative h-44 sm:h-48 overflow-hidden" style={{ borderRadius: "16px 16px 0 0" }}>
                     <ProductImage src={product.image_url} alt={product.title} />
 
-                    {/* Eco tags */}
                     <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5">
                       {product.eco_tags.slice(0, 2).map(tag => (
                         <span key={tag} className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ backgroundColor: tagStyle(tag).bg, color: tagStyle(tag).text }}>
@@ -158,18 +150,17 @@ export default function BuyerDashboard() {
                     </div>
                   </div>
 
-                  {/* Card body */}
-                  <div className="p-4 flex-1 flex flex-col">
+                  <div className="p-3 sm:p-4 flex-1 flex flex-col">
                     {product.seller?.store_name && (
                       <p
-                        className="text-[10px] font-bold uppercase tracking-widest mb-1.5"
+                        className="text-[10px] font-bold uppercase tracking-widest mb-1 sm:mb-1.5"
                         style={{ color: "#9E8B7D" }}
                       >
                         {product.seller.store_name}
                       </p>
                     )}
                     <h3
-                      className="font-serif font-bold leading-snug mb-auto"
+                      className="font-serif font-bold leading-snug mb-auto text-sm sm:text-base"
                       style={{
                         color: "#111118",
                         transition: "color 0.2s ease",
@@ -179,10 +170,10 @@ export default function BuyerDashboard() {
                     </h3>
 
                     <div
-                      className="flex items-center justify-between mt-3 pt-3"
+                      className="flex items-center justify-between mt-2 sm:mt-3 pt-2 sm:pt-3"
                       style={{ borderTop: "1px solid #EDEDF5" }}
                     >
-                      <span className="font-bold text-lg" style={{ color: "#B85C38" }}>
+                      <span className="font-bold text-base sm:text-lg" style={{ color: "#B85C38" }}>
                         ₹{product.price.toLocaleString("en-IN")}
                       </span>
                       {product.stock_quantity === 0 && (

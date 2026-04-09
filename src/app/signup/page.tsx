@@ -25,7 +25,6 @@ export default function SignupPage() {
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-16">
       <div className="w-full max-w-md">
-        {/* Header */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl mb-4" style={{ backgroundColor: "#2A5F1E" }}>
             <Leaf className="w-7 h-7 text-white" />
@@ -35,7 +34,6 @@ export default function SignupPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="card p-8 space-y-5">
-          {/* Role picker */}
           <div>
             <p className="text-sm font-semibold mb-3" style={{ color: "#3D2B1F" }}>I want to…</p>
             <div className="grid grid-cols-2 gap-3">

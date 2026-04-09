@@ -10,7 +10,6 @@ export interface AuthUser {
   name: string;
 }
 
-// Built-in demo accounts — work without any Supabase setup
 const DEMO_USERS: Array<AuthUser & { password: string }> = [
   { id: 'demo-buyer-1', email: 'buyer@demo.com', password: 'demo123', role: 'buyer', name: 'Priya Sharma' },
   { id: 'demo-seller-1', email: 'seller@demo.com', password: 'demo123', role: 'seller', name: 'Ravi Kumar' },
@@ -57,7 +56,6 @@ export const useAuthStore = create<AuthStore>()(
       login: async (email, password) => {
         set({ isLoading: true });
         try {
-          // 1. Try Supabase Auth if configured
           if (isSupabaseConfigured && supabase) {
             const { data, error } = await supabase.auth.signInWithPassword({ email, password });
             if (error) { set({ isLoading: false }); return { error: error.message }; }
@@ -75,7 +73,6 @@ export const useAuthStore = create<AuthStore>()(
             }
           }
 
-          // 2. Fallback: local auth (demo mode)
           const found = getLocalUsers().find(u => u.email === email && u.password === password);
           if (!found) { set({ isLoading: false }); return { error: 'Invalid email or password.' }; }
           // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -91,7 +88,6 @@ export const useAuthStore = create<AuthStore>()(
       signup: async (name, email, password, role) => {
         set({ isLoading: true });
         try {
-          // 1. Try Supabase Auth if configured
           if (isSupabaseConfigured && supabase) {
             const { data, error } = await supabase.auth.signUp({
               email, password,
@@ -106,7 +102,6 @@ export const useAuthStore = create<AuthStore>()(
             }
           }
 
-          // 2. Fallback: local auth
           if (getLocalUsers().find(u => u.email === email)) {
             set({ isLoading: false });
             return { error: 'An account with this email already exists.' };

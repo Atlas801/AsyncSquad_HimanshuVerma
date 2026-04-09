@@ -4,23 +4,19 @@ import { ArrowRight, Leaf, MapPin, ShoppingBag, Users, Sparkles } from "lucide-r
 export default function Home() {
   return (
     <div>
-      {/* ── HERO ── */}
       <section
         className="relative flex items-center min-h-[90vh] overflow-hidden"
         style={{ background: "linear-gradient(135deg, #111118 0%, #1c1c27 55%, #252535 100%)" }}
       >
-        {/* Dot-grid */}
         <div
           className="absolute inset-0 opacity-20 pointer-events-none"
           style={{ backgroundImage: "radial-gradient(circle, #ffffff 1px, transparent 1px)", backgroundSize: "36px 36px" }}
         />
-        {/* Glow blobs */}
         <div className="absolute top-[-100px] right-[-80px] w-[520px] h-[520px] rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(180,180,210,0.12) 0%, transparent 70%)" }} />
         <div className="absolute bottom-[-80px] left-[-60px] w-[380px] h-[380px] rounded-full pointer-events-none" style={{ background: "radial-gradient(circle, rgba(160,160,200,0.08) 0%, transparent 70%)" }} />
 
         <div className="section relative z-10 py-24">
           <div className="max-w-3xl">
-            {/* Badge */}
             <div
               className="inline-flex items-center gap-2 mb-7 px-4 py-2 rounded-full text-sm font-semibold tracking-wide"
               style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.14)", color: "#c8c8d8" }}
@@ -29,7 +25,6 @@ export default function Home() {
               India&apos;s Hyperlocal Eco Marketplace
             </div>
 
-            {/* Headline */}
             <h1 className="font-serif text-5xl md:text-[72px] font-bold leading-[1.08] mb-7 text-white">
               Shop small.
               <br />
@@ -42,7 +37,6 @@ export default function Home() {
               Handcrafted, sustainable goods from artisans right in your neighborhood. Every purchase supports a real person and a healthier planet.
             </p>
 
-            {/* CTA buttons — CSS-only hover via .hero-btn-primary / .hero-btn-ghost */}
             <div className="flex flex-col sm:flex-row gap-4">
               <Link
                 href="/buyer"
@@ -62,10 +56,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── STATS BAR ── */}
       <div style={{ backgroundColor: "#0e0e18", borderBottom: "1px solid #2a2a3a" }}>
         <div className="section py-6">
-          <div className="grid grid-cols-3 gap-8 text-center">
+          <div className="grid grid-cols-1 xs:grid-cols-3 gap-4 sm:gap-8 text-center">
             {[
               { num: "500+",    label: "Local Artisans" },
               { num: "2,000+", label: "Eco Products"   },
@@ -80,7 +73,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ── HOW IT WORKS ── */}
       <section className="py-28" style={{ backgroundColor: "#FAF6F0" }}>
         <div className="section">
           <div className="text-center mb-16">
@@ -98,7 +90,6 @@ export default function Home() {
             </p>
           </div>
 
-          {/* step-card uses CSS :hover in globals.css */}
           <div className="grid md:grid-cols-3 gap-6">
             {[
               { icon: MapPin,      step: "01", title: "Discover Nearby",  desc: "Browse products from sellers in your city. Filter by eco-tag or view them on a live map." },
@@ -123,7 +114,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── SELLER CTA ── */}
       <section className="py-24" style={{ background: "linear-gradient(135deg, #1c1c27 0%, #252535 100%)" }}>
         <div className="section text-center">
           <h2 className="font-serif text-4xl md:text-5xl font-bold mb-5 text-white">
@@ -132,7 +122,6 @@ export default function Home() {
           <p className="text-lg mb-10 max-w-xl mx-auto" style={{ color: "rgba(255,255,255,0.55)" }}>
             List your products for free and reach conscious buyers in your city today.
           </p>
-          {/* dark-cta-btn uses CSS :hover */}
           <Link href="/signup" className="dark-cta-btn">
             Open Your Store — It&apos;s Free <ArrowRight className="w-4 h-4" />
           </Link>

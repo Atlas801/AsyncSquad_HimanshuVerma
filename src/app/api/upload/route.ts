@@ -16,7 +16,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 });
     }
 
-    // Check credentials are configured
     if (!process.env.CLOUD_NAME || !process.env.CLOUD_API_SECRET) {
       return NextResponse.json(
         { error: 'Cloudinary not configured on server' },
@@ -24,7 +23,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Convert File to base64 data URI for Cloudinary
     const arrayBuffer = await file.arrayBuffer();
     const base64 = Buffer.from(arrayBuffer).toString('base64');
     const dataUri = `data:${file.type};base64,${base64}`;

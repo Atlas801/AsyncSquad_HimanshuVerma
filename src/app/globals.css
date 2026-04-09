@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant xs (@media (min-width: 480px));
+
 @theme {
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-serif: 'Lora', Georgia, serif;
@@ -42,7 +44,6 @@
 @layer utilities {
   .font-serif { font-family: 'Lora', Georgia, serif; }
 
-  /* Warm card — no glassmorphism, just clean + warm */
   .card {
     background-color: #FFFFFF;
     border: 1px solid #E5DDD5;
@@ -55,7 +56,6 @@
     transform: translateY(-2px);
   }
 
-  /* Eco tag badge */
   .eco-tag {
     display: inline-flex;
     align-items: center;
@@ -76,7 +76,6 @@
     border-color: #f0c4b0;
   }
 
-  /* Buttons */
   .btn-primary {
     background-color: #2A5F1E;
     color: #ffffff;
@@ -123,7 +122,6 @@
   .btn-terra:hover { background-color: #9A4A2C; }
   .btn-terra:active { transform: scale(0.97); }
 
-  /* Input field */
   .field {
     width: 100%;
     padding: 12px 16px;
@@ -141,12 +139,9 @@
   }
   .field::placeholder { color: #9E8B7D; }
 
-  /* Section wrapper */
   .section { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
 }
 
-
-/* ── Landing page hover effects (CSS-only, works in Server Components) ── */
 .hero-btn-primary {
   background-color: #ffffff;
   color: #1c1c27;
@@ -201,7 +196,6 @@
   box-shadow: 0 10px 36px rgba(0,0,0,0.4);
 }
 
-/* Navbar */
 .browse-btn {
   color: #252535;
   background-color: transparent;
@@ -250,7 +244,6 @@
   transform: translateY(-1px);
 }
 
-/* Product cards (buyer page) */
 .product-card {
   background-color: #FFFFFF;
   border: 1px solid #E5E5EE;

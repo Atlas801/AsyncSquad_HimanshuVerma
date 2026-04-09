@@ -28,7 +28,6 @@ export default function NearbyMap({ products }: NearbyMapProps) {
   useEffect(() => {
     if (!containerRef.current) return;
 
-    // Prevent double-init: if map already exists, tear it down first
     if (mapRef.current) {
       mapRef.current.remove();
       mapRef.current = null;
@@ -41,7 +40,6 @@ export default function NearbyMap({ products }: NearbyMapProps) {
 
       import("leaflet/dist/leaflet.css");
 
-      // Fix default marker icon paths
       delete (L.Icon.Default.prototype as unknown as Record<string, unknown>)._getIconUrl;
       L.Icon.Default.mergeOptions({
         iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
@@ -99,7 +97,6 @@ export default function NearbyMap({ products }: NearbyMapProps) {
         markers.push([product.lat, product.lng]);
       });
 
-      // Auto-fit map to show ALL seller markers tightly
       if (markers.length > 0) {
         const bounds = L.latLngBounds(markers);
         map.fitBounds(bounds, { padding: [50, 50], maxZoom: 12 });
@@ -117,7 +114,6 @@ export default function NearbyMap({ products }: NearbyMapProps) {
 
   return (
     <div className="relative w-full rounded-2xl overflow-hidden" style={{ border: "1px solid #E5E5EE" }}>
-      {/* Header badge */}
       <div
         className="absolute top-4 left-4 z-[999] px-4 py-2 rounded-full shadow-lg flex items-center gap-2 text-sm font-bold"
         style={{ backgroundColor: "rgba(255,255,255,0.92)", backdropFilter: "blur(10px)", color: "#252535" }}
@@ -126,10 +122,8 @@ export default function NearbyMap({ products }: NearbyMapProps) {
         {getSellerLocations(products).length} Sellers Near You
       </div>
 
-      {/* Leaflet map container */}
       <div ref={containerRef} className="w-full h-[480px] z-0" />
 
-      {/* Selected product card */}
       {selectedProduct && (
         <div
           className="absolute bottom-4 left-4 right-4 z-[999] rounded-2xl p-4 shadow-2xl flex items-center gap-4"

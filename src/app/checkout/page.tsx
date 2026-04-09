@@ -1,20 +1,37 @@
 "use client";
 
 import { useCartStore } from "@/lib/cart";
+import { useAuthStore } from "@/lib/authStore";
+import { useOrderStore } from "@/lib/orderStore";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { CheckCircle, Truck, CreditCard, Trash2 } from "lucide-react";
+import { CheckCircle, Truck, CreditCard, Trash2, Store } from "lucide-react";
 
 export default function CheckoutPage() {
   const { items, getTotal, clearCart, removeItem } = useCartStore();
+  const { user } = useAuthStore();
+  const { addOrder } = useOrderStore();
   const [placed, setPlaced] = useState(false);
   const router = useRouter();
 
   const handleCheckout = async () => {
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+    if (user.role === "seller") return;
+    
+    // Save to local test store
+    addOrder({
+      buyer_id: user.id,
+      total: getTotal(),
+      items: items.map(i => ({ title: i.title, qty: i.cartQuantity, price: i.price }))
+    });
+
     setPlaced(true);
     setTimeout(() => {
       clearCart();
-      router.push("/buyer");
+      router.push("/buyer/orders");
     }, 3000);
   };
 
@@ -27,6 +44,21 @@ export default function CheckoutPage() {
         <h2 className="text-3xl font-extrabold text-gray-900 mb-2">Order Confirmed!</h2>
         <p className="text-gray-500 text-lg text-center">Thank you for supporting sustainable artisans.</p>
         <p className="text-gray-400 mt-4 text-sm animate-pulse">Redirecting to explore...</p>
+      </div>
+    );
+  }
+
+  if (user?.role === "seller") {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] px-4">
+        <div className="w-24 h-24 bg-amber-50 rounded-full flex items-center justify-center mb-6 border border-amber-200">
+          <Store className="w-10 h-10 text-amber-600" />
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Sellers Cannot Purchase</h2>
+        <p className="text-gray-500 text-center max-w-md">Your account is registered as a seller. Please log in with a buyer account to shop.</p>
+        <button onClick={() => router.push("/seller")} className="mt-6 px-6 py-2 bg-amber-50 text-amber-700 rounded-full font-medium hover:bg-amber-100 transition border border-amber-200">
+          Go to Seller Dashboard
+        </button>
       </div>
     );
   }
@@ -50,7 +82,6 @@ export default function CheckoutPage() {
       <h1 className="text-3xl font-extrabold text-gray-900 mb-8">Checkout</h1>
 
       <div className="flex flex-col md:flex-row gap-8 lg:gap-12">
-        {/* Items */}
         <div className="md:w-2/3 bg-white p-6 md:p-8 rounded-3xl border border-gray-100 shadow-xl shadow-gray-200/40">
           <h2 className="text-xl font-bold mb-6 text-gray-900 flex items-center gap-2">
             <CreditCard className="w-5 h-5 text-green-600" /> Order Summary (Demo)
@@ -78,7 +109,6 @@ export default function CheckoutPage() {
           </div>
         </div>
 
-        {/* Summary */}
         <div className="md:w-1/3">
           <div className="bg-white p-6 md:p-8 rounded-3xl border border-gray-100 sticky top-24 shadow-2xl shadow-green-600/5">
             <h3 className="text-xl font-bold mb-6 text-gray-900">Price Details</h3>
