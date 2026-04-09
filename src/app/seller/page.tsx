@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { Package, TrendingUp, IndianRupee, Plus, ChevronRight, Clock, Users } from "lucide-react";
+import { Package, TrendingUp, IndianRupee, Plus, ChevronRight, Clock, Users, Loader2, Pencil, XCircle } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/lib/authStore";
 import { getProductsBySeller } from "@/lib/services/products";
@@ -22,6 +22,7 @@ export default function SellerDashboard() {
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
   const mounted = useRef(false);
 
   useEffect(() => { mounted.current = true; }, []);
@@ -45,11 +46,15 @@ export default function SellerDashboard() {
   const pendingCount = orders.filter(o => o.status === "pending").length;
 
   const handleUpdateStatus = async (orderId: string, newStatus: string) => {
+    setUpdatingOrderId(orderId);
     try {
       await updateOrderStatus(orderId, newStatus);
       setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus as Order["status"] } : o));
     } catch (e) {
       console.error("Failed to update order:", e);
+      alert(`Failed to update order status. Please try again.`);
+    } finally {
+      setUpdatingOrderId(null);
     }
   };
 
@@ -101,7 +106,7 @@ export default function SellerDashboard() {
                 <div className="p-8 text-center text-gray-400 text-sm">No products yet. Add your first product!</div>
               ) : (
                 products.slice(0, 5).map((p) => (
-                  <div key={p.id} className="flex items-center gap-4 p-4 hover:bg-gray-50/50 transition group">
+                  <Link key={p.id} href={`/seller/products/${p.id}/edit`} className="flex items-center gap-4 p-4 hover:bg-gray-50/50 transition group cursor-pointer">
                     {p.image_url && (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={p.image_url} alt={p.title} className="w-12 h-12 rounded-xl object-cover flex-shrink-0 border border-gray-100" />
@@ -114,15 +119,15 @@ export default function SellerDashboard() {
                       <span className="font-bold text-gray-900 text-sm">₹{Number(p.price).toLocaleString("en-IN")}</span>
                     </div>
                     <ChevronRight className="w-4 h-4 text-gray-300 flex-shrink-0 group-hover:text-gray-500 transition" />
-                  </div>
+                  </Link>
                 ))
               )}
             </div>
             {products.length > 5 && (
               <div className="p-4 border-t border-gray-50">
-                <button className="w-full text-center text-sm text-green-600 font-semibold hover:text-green-700 transition py-1">
+                <Link href="/seller/products" className="block w-full text-center text-sm text-green-600 font-semibold hover:text-green-700 transition py-1">
                   View all {products.length} products →
-                </button>
+                </Link>
               </div>
             )}
           </div>
@@ -157,12 +162,23 @@ export default function SellerDashboard() {
                       </p>
                       <div className="flex items-center justify-between">
                         <span className="font-bold text-gray-900">₹{Number(order.total_amount).toLocaleString("en-IN")}</span>
-                        {order.status === "pending" && (
-                          <button onClick={() => handleUpdateStatus(order.id, "processing")} className="text-xs text-green-600 font-bold hover:underline">Mark Processing →</button>
-                        )}
-                        {order.status === "processing" && (
-                          <button onClick={() => handleUpdateStatus(order.id, "completed")} className="text-xs text-green-600 font-bold hover:underline">Mark Complete →</button>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {updatingOrderId === order.id ? (
+                            <Loader2 className="w-4 h-4 text-green-600 animate-spin" />
+                          ) : (
+                            <>
+                              {order.status === "pending" && (
+                                <>
+                                  <button onClick={() => handleUpdateStatus(order.id, "processing")} className="text-xs text-green-600 font-bold hover:underline">Process →</button>
+                                  <button onClick={() => handleUpdateStatus(order.id, "cancelled")} className="text-xs text-red-500 font-bold hover:underline">Cancel</button>
+                                </>
+                              )}
+                              {order.status === "processing" && (
+                                <button onClick={() => handleUpdateStatus(order.id, "completed")} className="text-xs text-green-600 font-bold hover:underline">Complete →</button>
+                              )}
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -193,10 +209,17 @@ export default function SellerDashboard() {
                             </span>
                           </td>
                           <td className="px-6 py-4 text-right">
-                            {order.status === "pending" ? (
-                              <button onClick={() => handleUpdateStatus(order.id, "processing")} className="text-green-600 font-bold text-sm hover:underline">Process</button>
+                            {updatingOrderId === order.id ? (
+                              <Loader2 className="w-4 h-4 text-green-600 animate-spin inline-block" />
+                            ) : order.status === "pending" ? (
+                              <div className="flex items-center justify-end gap-3">
+                                <button onClick={() => handleUpdateStatus(order.id, "processing")} className="text-green-600 font-bold text-sm hover:underline">Process</button>
+                                <button onClick={() => handleUpdateStatus(order.id, "cancelled")} className="text-red-500 font-bold text-sm hover:underline">Cancel</button>
+                              </div>
                             ) : order.status === "processing" ? (
                               <button onClick={() => handleUpdateStatus(order.id, "completed")} className="text-green-600 font-bold text-sm hover:underline">Complete</button>
+                            ) : order.status === "cancelled" ? (
+                              <span className="text-red-400 text-sm font-bold">Cancelled ✕</span>
                             ) : (
                               <span className="text-gray-300 text-sm font-bold">Done ✓</span>
                             )}
