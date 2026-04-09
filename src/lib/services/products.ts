@@ -75,3 +75,24 @@ export const createProduct = async (product: Partial<Product>) => {
   if (error) throw error;
   return data;
 };
+
+export const updateProduct = async (id: string, updates: Partial<Product>) => {
+  const { data, error } = await supabase
+    .from('products')
+    .update(updates)
+    .eq('id', id)
+    .select('*, seller:sellers(*)')
+    .single();
+
+  if (error) throw error;
+  return data as Product;
+};
+
+export const deleteProduct = async (id: string) => {
+  const { error } = await supabase
+    .from('products')
+    .delete()
+    .eq('id', id);
+
+  if (error) throw error;
+};
