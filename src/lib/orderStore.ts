@@ -88,7 +88,7 @@ export const useOrderStore = create<OrderStore>()(
     {
       name: 'ecomarket-orders',
       version: 2,
-      migrate: () => ({ orders: [], hydrated: false }),
+      migrate: (_persistedState, _version) => ({ orders: [] as LocalOrder[], hydrated: false }),
       onRehydrateStorage: () => (state) => {
         if (state) state.hydrated = true;
       },

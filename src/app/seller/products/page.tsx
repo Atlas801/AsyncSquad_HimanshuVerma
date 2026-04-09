@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { Package, Plus, Pencil, Trash2, Search, ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/lib/authStore";
@@ -16,12 +16,12 @@ export default function SellerProductsPage() {
   const [search, setSearch] = useState("");
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
-  const mounted = useRef(false);
+  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => { mounted.current = true; }, []);
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
-    if (!mounted.current) return;
+    if (!mounted) return;
     if (!user) { router.push("/login"); return; }
     if (user.role !== "seller" && user.role !== "admin") { router.push("/buyer"); return; }
 
@@ -29,7 +29,7 @@ export default function SellerProductsPage() {
     getProductsBySeller(user.id).then(setProducts).catch(console.error).finally(() => setLoading(false));
   }, [user, router]);
 
-  if (!mounted.current) return null;
+  if (!mounted) return null;
 
   const filtered = products.filter(p =>
     p.title.toLowerCase().includes(search.toLowerCase()) ||

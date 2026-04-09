@@ -14,6 +14,33 @@ export interface Seller extends User {
   logo_url?: string;
 }
 
+export interface Material {
+  id: string;
+  name: string;
+  category: string;
+  is_biodegradable: boolean;
+  is_recyclable: boolean;
+  is_organically_sourced: boolean;
+  is_animal_derived: boolean;
+  is_plant_based: boolean;
+  is_synthetic: boolean;
+  is_ocean_safe: boolean;
+  is_water_intensive: boolean;
+  has_harmful_chemicals: boolean;
+  has_high_carbon_footprint: boolean;
+  eco_score: number;
+  created_at?: string;
+}
+
+export interface ProductMaterial {
+  id: string;
+  product_id: string;
+  material_id: string;
+  percentage?: number;
+  created_at?: string;
+  material?: Material;
+}
+
 export interface Product {
   id: string;
   seller_id: string;
@@ -22,6 +49,10 @@ export interface Product {
   price: number;
   stock_quantity: number;
   eco_tags: string[];
+  eco_score?: number;
+  tier_eco_tag?: string;
+  specific_eco_tags?: string[];
+  product_materials?: ProductMaterial[];
   image_url?: string;
   created_at: string;
   seller?: Partial<Seller>;

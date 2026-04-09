@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "@/lib/authStore";
 import { useOrderStore } from "@/lib/orderStore";
 import { useRouter } from "next/navigation";
@@ -18,19 +18,19 @@ export default function BuyerOrdersPage() {
   const { user } = useAuthStore();
   const { orders, fetchOrders } = useOrderStore();
   const router = useRouter();
-  const mounted = useRef(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    mounted.current = true;
+    setMounted(true);
   }, []);
 
   useEffect(() => {
-    if (!mounted.current) return;
+    if (!mounted) return;
     if (!user) { router.push("/login"); return; }
     fetchOrders(user.id);
   }, [user, router, fetchOrders]);
 
-  if (!mounted.current) return null;
+  if (!mounted) return null;
 
   if (!user) {
     return (

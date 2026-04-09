@@ -4,7 +4,7 @@ import { Product } from '@/types';
 export const getProducts = async (): Promise<Product[]> => {
   const { data, error } = await supabase
     .from('products')
-    .select('*, seller:sellers(*)');
+    .select('*, seller:sellers(*), product_materials(*, material:materials(*))');
 
   if (error) throw new Error(error.message);
   return data as Product[];
@@ -43,7 +43,7 @@ export const getProductById = async (id: string): Promise<Product | null> => {
   if (isUUID) {
     const { data, error } = await supabase
       .from('products')
-      .select('*, seller:sellers(*)')
+      .select('*, seller:sellers(*), product_materials(*, material:materials(*))')
       .eq('id', id)
       .single();
 
@@ -58,7 +58,7 @@ export const getProductById = async (id: string): Promise<Product | null> => {
 export const getProductsBySeller = async (sellerId: string): Promise<Product[]> => {
   const { data, error } = await supabase
     .from('products')
-    .select('*, seller:sellers(*)')
+    .select('*, seller:sellers(*), product_materials(*, material:materials(*))')
     .eq('seller_id', sellerId);
 
   if (error) return [];
@@ -95,4 +95,22 @@ export const deleteProduct = async (id: string) => {
     .eq('id', id);
 
   if (error) throw error;
+};
+
+import { analyzeEcoImpact } from '../ecoScoring';
+
+export const recalculateAllProductsEcoScores = async () => {
+  const products = await getProducts();
+  
+  for (const product of products) {
+    if (!product.product_materials) continue;
+    
+    const { score, tierTag, specificTags } = analyzeEcoImpact(product.product_materials);
+    
+    await supabase.from('products').update({
+      eco_score: score,
+      tier_eco_tag: tierTag,
+      specific_eco_tags: specificTags,
+    }).eq('id', product.id);
+  }
 };

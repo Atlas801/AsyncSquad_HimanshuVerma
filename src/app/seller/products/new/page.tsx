@@ -4,8 +4,11 @@ import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/lib/authStore";
 import { useProductStore } from "@/lib/productStore";
-import { UploadCloud, CheckCircle, X, Loader2, ImageIcon, Lock } from "lucide-react";
+import { UploadCloud, CheckCircle, X, Loader2, ImageIcon, Lock, Plus, Trash } from "lucide-react";
 import Link from "next/link";
+import { getMaterials } from "@/lib/services/materials";
+import { Material, ProductMaterial } from "@/types";
+import { analyzeEcoImpact } from "@/lib/ecoScoring";
 
 async function uploadImage(file: File): Promise<string> {
   const formData = new FormData();
@@ -28,9 +31,18 @@ export default function NewProductPage() {
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const [done, setDone] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
   const [mounted, setMounted] = useState(false);
 
-  useEffect(() => { setMounted(true); }, []);
+  // Materials
+  const [availableMaterials, setAvailableMaterials] = useState<Material[]>([]);
+  const [selectedMaterials, setSelectedMaterials] = useState<{ material: Material, percentage: string }[]>([]);
+
+  useEffect(() => { 
+    setMounted(true); 
+    getMaterials().then(setAvailableMaterials).catch(console.error);
+  }, []);
 
   if (!mounted) return null;
 
@@ -64,23 +76,81 @@ export default function NewProductPage() {
     finally { setUploading(false); }
   };
 
+  const addMaterialRow = () => {
+    if (availableMaterials.length === 0) return;
+    setSelectedMaterials([...selectedMaterials, { material: availableMaterials[0], percentage: "" }]);
+  };
+
+  const removeMaterialRow = (index: number) => {
+    const newSelected = [...selectedMaterials];
+    newSelected.splice(index, 1);
+    setSelectedMaterials(newSelected);
+  };
+
+  const updateMaterialRow = (index: number, materialId: string, percentage: string) => {
+    const newSelected = [...selectedMaterials];
+    const mat = availableMaterials.find(m => m.id === materialId) || newSelected[index].material;
+    newSelected[index] = { material: mat, percentage };
+    setSelectedMaterials(newSelected);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (uploading) return;
+    if (uploading || submitting) return;
 
-    const tags = form.tags ? form.tags.split(",").map(t => t.trim()).filter(Boolean) : [];
-    await addProduct({
-      seller_id: user.id,
-      title: form.title,
-      description: form.description,
-      price: parseFloat(form.price),
-      stock_quantity: parseInt(form.stock) || 0,
-      eco_tags: tags,
-      image_url: imageUrl ?? undefined,
-      seller: { id: user.id, name: user.name, store_name: user.name + "'s Store" },
-    });
-    setDone(true);
-    setTimeout(() => router.push("/seller"), 2000);
+    setError(null);
+    setSubmitting(true);
+
+    try {
+      // Eco Scoring calculation
+      const pMaterials: ProductMaterial[] = selectedMaterials.map(sm => ({
+        id: "",
+        product_id: "",
+        material_id: sm.material.id,
+        percentage: sm.percentage ? parseFloat(sm.percentage) : undefined,
+        material: sm.material
+      }));
+
+      const ecoResult = analyzeEcoImpact(pMaterials);
+
+      const tags = form.tags ? form.tags.split(",").map(t => t.trim()).filter(Boolean) : [];
+      
+      // Auto-append specific tags to general eco tags? Or keep strictly separate? 
+      // The requirement says we should display them. The UI layer can merge or show separately.
+      // We already have `specific_eco_tags`.
+
+      await addProduct({
+        seller_id: user.id,
+        title: form.title,
+        description: form.description,
+        price: parseFloat(form.price),
+        stock_quantity: parseInt(form.stock) || 0,
+        eco_tags: tags,
+        eco_score: ecoResult.score,
+        tier_eco_tag: ecoResult.tierTag,
+        specific_eco_tags: ecoResult.specificTags,
+        product_materials: pMaterials,
+        image_url: imageUrl ?? undefined,
+        seller: { id: user.id, name: user.name, store_name: user.name + "'s Store" },
+      });
+      setDone(true);
+      setTimeout(() => router.push("/seller"), 2000);
+    } catch (err: unknown) {
+      console.error('Publish product failed:', err);
+      const message = err instanceof Error ? err.message : 'Something went wrong';
+      // Provide user-friendly messages for common Supabase errors
+      if (message.includes('violates row-level security') || message.includes('new row violates')) {
+        setError('Permission denied. Please log out and log back in, then try again.');
+      } else if (message.includes('violates foreign key constraint') && message.includes('seller')) {
+        setError('Your seller profile is incomplete. Please log out, re-register as a seller, and try again.');
+      } else if (message.includes('column') && (message.includes('does not exist') || message.includes('eco_score') || message.includes('tier_eco_tag'))) {
+        setError('Database schema is outdated. Please contact the admin to run the latest migrations.');
+      } else {
+        setError(`Failed to publish product: ${message}`);
+      }
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (done) {
@@ -171,13 +241,62 @@ export default function NewProductPage() {
           </div>
         </div>
 
+        {/* MATERIALS SELECTOR */}
+        <div className="p-4 rounded-2xl bg-gray-50 border border-gray-100">
+          <label className="block text-sm font-semibold mb-2" style={{ color: "#3D2B1F" }}>Raw Materials (For Eco-Tagging Engine)</label>
+          <p className="text-xs text-gray-500 mb-4">Add materials and their composition percentage to automatically generate your eco score and tags.</p>
+          
+          <div className="space-y-3 mb-4">
+            {selectedMaterials.map((sm, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <select
+                  required
+                  value={sm.material.id}
+                  onChange={e => updateMaterialRow(index, e.target.value, sm.percentage)}
+                  className="flex-1 field py-2 px-3 text-sm"
+                >
+                  {availableMaterials.map(m => (
+                    <option key={m.id} value={m.id}>{m.name}</option>
+                  ))}
+                </select>
+                <input
+                  type="number"
+                  placeholder="%"
+                  min="1"
+                  max="100"
+                  value={sm.percentage}
+                  onChange={e => updateMaterialRow(index, sm.material.id, e.target.value)}
+                  className="w-20 field py-2 px-3 text-sm text-center"
+                />
+                <button type="button" onClick={() => removeMaterialRow(index)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg">
+                  <Trash className="w-4 h-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={addMaterialRow}
+            className="text-sm font-bold text-green-700 hover:text-green-800 flex items-center gap-1"
+          >
+            <Plus className="w-4 h-4" /> Add Material
+          </button>
+        </div>
+
         <div>
-          <label className="block text-sm font-semibold mb-2" style={{ color: "#3D2B1F" }}>Eco Tags <span className="font-normal text-xs" style={{ color: "#9E8B7D" }}>(comma separated)</span></label>
+          <label className="block text-sm font-semibold mb-2" style={{ color: "#3D2B1F" }}>Other Tags <span className="font-normal text-xs" style={{ color: "#9E8B7D" }}>(comma separated)</span></label>
           <input type="text" className="field" placeholder="e.g. handmade, plastic-free, upcycled" value={form.tags} onChange={(e) => setForm({ ...form, tags: e.target.value })} />
         </div>
 
-        <button type="submit" disabled={uploading} className="btn-primary w-full py-3.5 text-base disabled:opacity-60 disabled:cursor-wait">
-          {uploading ? <><Loader2 className="w-5 h-5 animate-spin" /> Uploading…</> : "Publish Product"}
+        {error && (
+          <div className="rounded-xl p-4 text-sm font-medium" style={{ backgroundColor: '#FEF2F2', color: '#991B1B', border: '1px solid #FECACA' }}>
+            {error}
+          </div>
+        )}
+
+        <button type="submit" disabled={uploading || submitting} className="btn-primary w-full py-3.5 text-base disabled:opacity-60 disabled:cursor-wait">
+          {submitting ? <><Loader2 className="w-5 h-5 animate-spin" /> Publishing…</> : uploading ? <><Loader2 className="w-5 h-5 animate-spin" /> Uploading…</> : "Publish Product"}
         </button>
       </form>
     </div>

@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { Package, TrendingUp, IndianRupee, Plus, ChevronRight, Clock, Users, Loader2, Pencil, XCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Package, TrendingUp, IndianRupee, Plus, ChevronRight, Clock, Users, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useAuthStore } from "@/lib/authStore";
 import { getProductsBySeller } from "@/lib/services/products";
@@ -23,12 +23,12 @@ export default function SellerDashboard() {
   const [products, setProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [updatingOrderId, setUpdatingOrderId] = useState<string | null>(null);
-  const mounted = useRef(false);
+  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => { mounted.current = true; }, []);
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
-    if (!mounted.current) return;
+    if (!mounted) return;
     if (!user) { router.push("/login"); return; }
     if (user.role !== "seller" && user.role !== "admin") { router.push("/buyer"); return; }
 
@@ -37,7 +37,7 @@ export default function SellerDashboard() {
    
   }, [user, router]);
 
-  if (!mounted.current) return null;
+  if (!mounted) return null;
 
   const totalRevenue = orders
     .filter(o => o.status === "completed")

@@ -49,16 +49,34 @@ export default function BuyerDashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const [tagFilter, setTagFilter] = useState("");
+
   useEffect(() => {
-    if (!search.trim()) { setFiltered(products); return; }
-    const q = search.toLowerCase();
-    setFiltered(products.filter(p =>
-      p.title.toLowerCase().includes(q) ||
-      p.description.toLowerCase().includes(q) ||
-      p.eco_tags.some(t => t.toLowerCase().includes(q)) ||
-      p.seller?.store_name?.toLowerCase().includes(q)
-    ));
-  }, [search, products]);
+    let result = products;
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter(p =>
+        p.title.toLowerCase().includes(q) ||
+        p.description.toLowerCase().includes(q) ||
+        p.eco_tags.some(t => t.toLowerCase().includes(q)) ||
+        p.seller?.store_name?.toLowerCase().includes(q)
+      );
+    }
+    if (tagFilter) {
+      result = result.filter(p => 
+        p.tier_eco_tag === tagFilter || 
+        (p.specific_eco_tags && p.specific_eco_tags.includes(tagFilter)) ||
+        p.eco_tags.includes(tagFilter)
+      );
+    }
+    setFiltered(result);
+  }, [search, tagFilter, products]);
+
+  const availableTags = Array.from(new Set(products.flatMap(p => [
+    ...(p.tier_eco_tag && p.tier_eco_tag !== 'Pending' ? [p.tier_eco_tag] : []),
+    ...(p.specific_eco_tags || []),
+    ...(p.eco_tags || [])
+  ])));
 
   if (!mounted) {
     return (
@@ -96,11 +114,22 @@ export default function BuyerDashboard() {
           <input
             type="text" value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search products, stores, eco-tags…"
+            placeholder="Search products, stores…"
             className="field"
             style={{ paddingLeft: "40px" }}
           />
         </div>
+
+        <select
+          value={tagFilter}
+          onChange={(e) => setTagFilter(e.target.value)}
+          className="field max-w-xs"
+        >
+          <option value="">All Eco Tags</option>
+          {availableTags.map(t => (
+            <option key={t} value={t}>{t}</option>
+          ))}
+        </select>
 
         <div
           className="flex overflow-hidden rounded-xl self-start sm:self-auto shrink-0"
@@ -163,11 +192,17 @@ export default function BuyerDashboard() {
                     <ProductImage src={product.image_url} alt={product.title} />
 
                     <div className="absolute top-2.5 left-2.5 flex flex-col gap-1.5">
-                      {product.eco_tags.slice(0, 2).map(tag => (
-                        <span key={tag} className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ backgroundColor: tagStyle(tag).bg, color: tagStyle(tag).text }}>
-                          {tag}
+                      {product.tier_eco_tag ? (
+                        <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ backgroundColor: product.tier_eco_tag === 'Pending' ? "#E5E5EE" : "#E8F5E3", color: product.tier_eco_tag === 'Pending' ? "#6b6b8a" : "#2A5F1E" }}>
+                          {product.tier_eco_tag === 'Pending' ? 'Eco Rating Pending' : product.tier_eco_tag}
                         </span>
-                      ))}
+                      ) : (
+                        product.eco_tags.slice(0, 2).map(tag => (
+                          <span key={tag} className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ backgroundColor: tagStyle(tag).bg, color: tagStyle(tag).text }}>
+                            {tag}
+                          </span>
+                        ))
+                      )}
                     </div>
                   </div>
 
