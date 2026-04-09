@@ -46,7 +46,17 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             {product.title}
           </h1>
 
-          <div className="flex flex-wrap gap-2 mb-4 sm:mb-6">
+          <div className="flex flex-wrap gap-2 mb-4">
+            {product.tier_eco_tag && (
+              <span className="eco-tag font-bold" style={{ backgroundColor: product.tier_eco_tag === 'Pending' ? "#E5E5EE" : "#E8F5E3", color: product.tier_eco_tag === 'Pending' ? "#6b6b8a" : "#2A5F1E" }}>
+                {product.tier_eco_tag === 'Pending' ? 'Eco Rating Pending' : product.tier_eco_tag} (Score: {product.eco_score ?? 'N/A'})
+              </span>
+            )}
+            {product.specific_eco_tags?.map((tag) => (
+              <span key={tag} className="eco-tag border border-green-200 bg-green-50 text-green-700" title="Automatically assigned based on material properties">
+                {tag}
+              </span>
+            ))}
             {product.eco_tags.map((tag) => (
               <span key={tag} className="eco-tag">
                 <Leaf className="w-2.5 h-2.5" /> {tag}
@@ -54,7 +64,32 @@ export default async function ProductPage({ params }: { params: Promise<{ id: st
             ))}
           </div>
 
-          <p className="leading-relaxed text-sm sm:text-base mb-6 sm:mb-8" style={{ color: "#6B5747" }}>{product.description}</p>
+          <p className="leading-relaxed text-sm sm:text-base mb-6" style={{ color: "#6B5747" }}>{product.description}</p>
+
+          {product.product_materials && product.product_materials.length > 0 && (
+            <div className="mb-6 bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
+              <h3 className="font-bold text-sm mb-3">Why this tag?</h3>
+              <div className="space-y-3">
+                {product.product_materials.map(pm => (
+                  <div key={pm.id} className="text-sm">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="font-semibold text-gray-800">{pm.material?.name}</span>
+                      <span className="text-xs text-gray-500">Score: {pm.material?.eco_score} {pm.percentage ? `(${pm.percentage}%)` : ''}</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {pm.material?.is_biodegradable && <span className="text-[10px] bg-gray-100 px-2 py-0.5 rounded text-gray-600">Biodegradable</span>}
+                      {pm.material?.is_recyclable && <span className="text-[10px] bg-gray-100 px-2 py-0.5 rounded text-gray-600">Recyclable</span>}
+                      {pm.material?.is_organically_sourced && <span className="text-[10px] bg-gray-100 px-2 py-0.5 rounded text-gray-600">Organic</span>}
+                      {pm.material?.is_plant_based && <span className="text-[10px] bg-gray-100 px-2 py-0.5 rounded text-gray-600">Plant Based</span>}
+                      {pm.material?.is_animal_derived && <span className="text-[10px] bg-red-50 text-red-600 px-2 py-0.5 rounded text-gray-600">Animal Derived</span>}
+                      {pm.material?.is_synthetic && <span className="text-[10px] bg-red-50 text-red-600 px-2 py-0.5 rounded text-gray-600">Synthetic</span>}
+                      {pm.material?.has_harmful_chemicals && <span className="text-[10px] bg-red-50 text-red-600 px-2 py-0.5 rounded">Harmful Chemicals</span>}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="flex items-center gap-6 mb-6 sm:mb-8 pb-6 sm:pb-8" style={{ borderBottom: "1px solid #E5DDD5" }}>
             <div className="flex items-center gap-2">

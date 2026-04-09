@@ -54,6 +54,25 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: itemsError.message }, { status: 500 });
     }
 
+    // Validate stock availability before decrementing
+    for (const item of orderData.items) {
+      if (!item.product_id || !item.qty || item.qty <= 0) {
+        return NextResponse.json({ error: `Invalid item data` }, { status: 400 });
+      }
+      const { data: product } = await supabase
+        .from('products')
+        .select('stock_quantity, title')
+        .eq('id', item.product_id)
+        .single();
+
+      if (!product || product.stock_quantity < item.qty) {
+        return NextResponse.json(
+          { error: `Insufficient stock for "${product?.title ?? 'Unknown product'}". Available: ${product?.stock_quantity ?? 0}, Requested: ${item.qty}` },
+          { status: 409 }
+        );
+      }
+    }
+
     // Decrement stock for each item using RPC
     for (const item of orderData.items) {
       await supabase.rpc('decrement_stock', { p_id: item.product_id, qty: item.qty });

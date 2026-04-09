@@ -28,27 +28,36 @@ export default function CheckoutPage() {
     setLoading(true);
 
     try {
-      // Group items by seller — use first item's seller_id
-      // (In a full app you'd split by seller, but for MVP assume single seller per order)
-      const sellerId = items[0]?.seller_id;
+      // Group items by seller to handle multi-seller carts correctly
+      const itemsBySeller = new Map<string, typeof items>();
+      for (const item of items) {
+        const sid = item.seller_id;
+        if (!sid) continue;
+        if (!itemsBySeller.has(sid)) itemsBySeller.set(sid, []);
+        itemsBySeller.get(sid)!.push(item);
+      }
 
-      if (!sellerId) {
+      if (itemsBySeller.size === 0) {
         setError("Unable to determine the seller for this order.");
         setLoading(false);
         return;
       }
 
-      await addOrder({
-        buyer_id: user.id,
-        seller_id: sellerId,
-        total: getTotal(),
-        items: items.map(i => ({
-          title: i.title,
-          qty: i.cartQuantity,
-          price: i.price,
-          product_id: i.id,
-        })),
-      });
+      // Create one order per seller
+      for (const [sellerId, sellerItems] of itemsBySeller) {
+        const sellerTotal = sellerItems.reduce((sum, i) => sum + i.price * i.cartQuantity, 0);
+        await addOrder({
+          buyer_id: user.id,
+          seller_id: sellerId,
+          total: sellerTotal,
+          items: sellerItems.map(i => ({
+            title: i.title,
+            qty: i.cartQuantity,
+            price: i.price,
+            product_id: i.id,
+          })),
+        });
+      }
 
       setPlaced(true);
       clearCart();

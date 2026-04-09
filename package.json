@@ -11,6 +11,7 @@
   "dependencies": {
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.103.0",
+    "@tailwindcss/oxide-linux-x64-gnu": "^4.2.2",
     "@types/leaflet": "^1.9.21",
     "cloudinary": "^2.9.0",
     "clsx": "^2.1.1",

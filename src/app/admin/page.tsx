@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { BarChart, Users, ShoppingBag, ShieldCheck, IndianRupee } from "lucide-react";
 import { useAuthStore } from "@/lib/authStore";
 import { supabase } from "@/lib/supabase";
@@ -17,12 +17,12 @@ export default function AdminDashboard() {
   const { user } = useAuthStore();
   const router = useRouter();
   const [stats, setStats] = useState<AdminStats>({ totalUsers: 0, totalProducts: 0, totalOrders: 0, totalRevenue: 0 });
-  const mounted = useRef(false);
+  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => { mounted.current = true; }, []);
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
-    if (!mounted.current) return;
+    if (!mounted) return;
     if (!user) { router.push("/login"); return; }
     if (user.role !== "admin") { router.push("/buyer"); return; }
 
@@ -49,7 +49,7 @@ export default function AdminDashboard() {
    
   }, [user, router]);
 
-  if (!mounted.current) return null;
+  if (!mounted) return null;
 
   return (
     <div className="py-8 animate-in fade-in max-w-6xl mx-auto px-4 sm:px-6">
